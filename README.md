@@ -19,3 +19,5 @@
 
 
 ### Until first release and only one contributor all the commits are going to be pushed to the master branch. For more contributors and after release other I will decide on other, more suitable approach
+
+## Dedication: Dla Grzechotki.
