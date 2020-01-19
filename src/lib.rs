@@ -3,8 +3,7 @@ mod helpers;
 
 #[cfg(test)]
 mod tests {
-    use std::time::{Duration, Instant};
-    use std::thread::sleep;
+    use std::time::{Instant};
     
     #[test]
     fn test_calc_fingerprint_collection_short() {
