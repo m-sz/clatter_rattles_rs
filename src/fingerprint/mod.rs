@@ -4,9 +4,9 @@ use rustfft::num_complex::Complex;
 use rustfft::num_traits::Zero;
 use rustfft::FFT;
 
-const FFT_WINDOW_SIZE: usize = 4096; // chunk window size for fast forward fourier  to process
+const FFT_WINDOW_SIZE: usize = 4096; // chunk window size to process by fast forward fourier function
 const FREQ_BINS: &[usize] = &[40, 80, 120, 180, 300]; // Frequencies that separates locality for max magnitude to be calculated (one value per frequencies space) 
-const FUZZ_FACTOR: usize = 2; // higher the value of this factor then lower the hash entropy, and less bias the algorithm become to the sound noises
+const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the hash entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
 pub struct FingerprintHandle {
@@ -79,4 +79,28 @@ fn hash(arr: &[usize]) -> usize {
         + (arr[2] - (arr[2] % FUZZ_FACTOR)) * usize::pow(10, 5)
         + (arr[1] - (arr[1] % FUZZ_FACTOR)) * usize::pow(10, 2)
         + (arr[0] - (arr[0] % FUZZ_FACTOR))
+}
+
+#[cfg(test)]
+mod tests {
+    use rand::prelude::*;
+    use rustfft::num_traits::Zero;
+    #[test]
+    fn test_hash() {
+        let record_points_0 = vec![45, 100, 140, 235, 300];
+        let record_points_1 = vec![45, 100, 145, 235, 300];
+        assert_eq!(super::hash(&record_points_0), 23414010044);
+        assert_ne!(super::hash(&record_points_0), super::hash(&record_points_1));
+    }
+    #[test]
+    fn test_calculate_fingerprint_hash() {
+        let mut rng = rand::thread_rng();
+        let mut arr_f32: Vec<f32> = vec![0.0; super::FFT_WINDOW_SIZE];
+        arr_f32.iter_mut().for_each(|complex_num| {
+            *complex_num =  rng.gen::<f32>() * 10000_f32;
+        });
+        let arr: Vec<super::Complex<f32>> = arr_f32.iter().map(super::Complex::from).collect();
+        let fingerprint = super::calculate_fingerprint_hash(&arr);
+        assert_eq!(fingerprint > 10000000001, true);
+    }
 }

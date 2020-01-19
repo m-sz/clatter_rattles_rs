@@ -10,4 +10,5 @@ minimp3 = "0.3"
 
 # standard crate data is left out
 [dev-dependencies]
+rand = "0.7"
 
