@@ -3,7 +3,7 @@
 <p align="center">
     <img 
     width="100%" height="100%"
-    src="https://github.com/Bartoshko/clatter_rattles_rs/blob/master/assets/logo.jpg"/>
+    src="https://github.com/bartOssh/clatter_rattles_rs/blob/master/assets/logo.jpg"/>
 </p>
 
 - Library for sound pattern recognition from sound stream based on [Fast Fourier Transform](https://en.wikipedia.org/wiki/Fast_Fourier_transform) and [Fingerprint Hash](https://en.wikipedia.org/wiki/Fingerprint_(computing)).
