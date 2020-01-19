@@ -13,7 +13,7 @@ use std::fs::File;
 /// 
 /// # Returns - success of decoded frames, dynamic error otherwise
 /// 
-pub async fn decode_mp3(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
+pub fn decode_mp3(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
     let mut decoder = Decoder::new(File::open(filename)?);
     let mut frames = Vec::new();
 
@@ -36,4 +36,18 @@ pub async fn decode_mp3(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
     }
 
     Ok(frames)
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_decode_mp3() {
+        let filename = format!("./assets/sample.mp3");
+        let decoded_stream = super::decode_mp3(&filename);
+        if let Ok(stream) = decoded_stream {
+            assert_eq!(1, 1);
+        } else {
+            assert_eq!(1, 2);
+        }
+    }
 }
