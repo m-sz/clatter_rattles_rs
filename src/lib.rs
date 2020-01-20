@@ -14,7 +14,8 @@ mod tests {
         ).unwrap();
         for fingerprint in fingerprint_collection.iter() {
             if *fingerprint != 0 {
-                assert_eq!(*fingerprint > 10000000001, true);
+                let fingerprint_log10 = (*fingerprint as f64).log10();
+                assert_eq!(fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64, true);
             }
         }
         println!("Decoding and hashing stream took {} milliseconds", start_time.elapsed().as_millis());
@@ -29,7 +30,8 @@ mod tests {
         ).unwrap();
         for fingerprint in fingerprint_collection.iter() {
             if *fingerprint != 0 {
-                assert_eq!(*fingerprint > 10000000001, true);
+                let fingerprint_log10 = (*fingerprint as f64).log10();
+                assert_eq!(fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64, true);
             }
         }
         println!("Decoding and hashing stream took {} milliseconds", start_time.elapsed().as_millis());

@@ -3,9 +3,10 @@ use rustfft::algorithm::Radix4;
 use rustfft::num_complex::Complex;
 use rustfft::num_traits::Zero;
 use rustfft::FFT;
+// use std::sync::{Arc, Mutex};
 
 const FFT_WINDOW_SIZE: usize = 4096; // chunk window size to process by fast forward fourier function
-const FREQ_BINS: &[usize] = &[40, 80, 120, 180, 300]; // Frequencies that separates locality for max magnitude to be calculated (one value per frequencies space) 
+const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
 const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the hash entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
@@ -55,7 +56,7 @@ fn calculate_fingerprint_hash(arr: &[Complex<f32>]) -> usize {
     let mut high_scores: Vec<f32> = vec![0.0; FREQ_BINS.len()];
     let mut record_points: Vec<usize> = vec![0; FREQ_BINS.len()];
 
-    for bin in FREQ_BINS[0]..=FREQ_BINS[4] {
+    for bin in FREQ_BINS[0]..=FREQ_BINS[FREQ_BINS.len() - 1] {
         let magnitude = arr[bin].re.hypot(arr[bin].im);
 
         let mut bin_idx = 0;
@@ -75,7 +76,8 @@ fn calculate_fingerprint_hash(arr: &[Complex<f32>]) -> usize {
 
 /// Hash function with reverse order
 fn hash(arr: &[usize]) -> usize {
-    (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)
+    (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
+        + (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)
         + (arr[2] - (arr[2] % FUZZ_FACTOR)) * usize::pow(10, 5)
         + (arr[1] - (arr[1] % FUZZ_FACTOR)) * usize::pow(10, 2)
         + (arr[0] - (arr[0] % FUZZ_FACTOR))
@@ -87,9 +89,9 @@ mod tests {
     use rustfft::num_traits::Zero;
     #[test]
     fn test_hash() {
-        let record_points_0 = vec![45, 100, 140, 235, 300];
-        let record_points_1 = vec![45, 100, 145, 235, 300];
-        assert_eq!(super::hash(&record_points_0), 23414010044);
+        let record_points_0 = vec![32 ,45, 100, 140, 235, 300];
+        let record_points_1 = vec![33, 45, 100, 145, 235, 300];
+        assert_eq!(super::hash(&record_points_0), 2354010004432);
         assert_ne!(super::hash(&record_points_0), super::hash(&record_points_1));
     }
     #[test]
@@ -101,6 +103,7 @@ mod tests {
         });
         let arr: Vec<super::Complex<f32>> = arr_f32.iter().map(super::Complex::from).collect();
         let fingerprint = super::calculate_fingerprint_hash(&arr);
-        assert_eq!(fingerprint > 10000000001, true);
+        let fingerprint_log10 = (fingerprint as f64).log10();
+        assert_eq!(fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64, true);
     }
 }

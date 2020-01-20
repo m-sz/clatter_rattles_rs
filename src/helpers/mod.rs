@@ -42,10 +42,13 @@ pub fn decode_mp3(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
 mod test {
     #[test]
     fn test_decode_mp3() {
+        // This test verifies if used library for decoding mp3 is working fine
+        // and nothing substantial has been changed in external lib.
+        // Please check always against the same file, otherwise it will not pass.
         let filename = format!("./assets/sample.mp3");
         let decoded_stream = super::decode_mp3(&filename);
         if let Ok(stream) = decoded_stream {
-            assert_eq!(1, 1);
+            assert_eq!(stream.len(), 619776);
         } else {
             assert_eq!(1, 2);
         }
