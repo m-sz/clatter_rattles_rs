@@ -15,7 +15,12 @@
 
 ## Description
 
-## WORK IN PROGRESS
+## WORK IN PROGRESS - TODO
+
+- add / implement redis database with index, find, delete methods
+- implement matching mechanism for looking in redis database for hash keys and corresponding song
+- stream tracker for analysis of in memory fingerprint collection reference to trigger response when match happen
+- flexible matching for in memory fingerprint collection tracking
 
 
 ### Until first release and only one contributor all the commits are going to be pushed to the master branch. For more contributors and after release other I will decide on other, more suitable approach
