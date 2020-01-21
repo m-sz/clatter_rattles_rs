@@ -1,5 +1,6 @@
 mod fingerprint;
 mod helpers;
+mod redis_db;
 
 #[cfg(test)]
 mod tests {
