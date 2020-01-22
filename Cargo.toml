@@ -8,6 +8,7 @@ edition = "2018"
 rustfft = "3.0"
 minimp3 = "0.3"
 redis = "0.15"
+rayon = "1.3"
 
 # standard crate data is left out
 [dev-dependencies]
