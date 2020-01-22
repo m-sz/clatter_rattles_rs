@@ -25,5 +25,4 @@
 
 ## Dedication
 
-    :cherry_blossom: Dla Grzechotki :cherries:
-
+:cherry_blossom: Dla Grzechotki :cherries:
