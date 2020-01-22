@@ -8,20 +8,20 @@ trait Repository {
     /// 
     /// #Arguments:
     /// * fingerprints - collection of all fingerprints for a given song
-    /// * song - song author and title in one string
+    /// * song - author and title of a song in one string
     /// 
-    /// # Return - Success if whole query is done successful or dynamic Error otherwise
+    /// # Return - Success if whole query is done successfully or dynamic Error otherwise
     ///  
-    fn index_many(&mut self, fingerprints: Vec<usize>, song: String) -> Result<(), Box<dyn Error>>;
+    fn store(&mut self, fingerprints: &Vec<usize>, song: &String) -> Result<(), Box<dyn Error>>;
 
-    /// Get all fingerprints keys We are asking for with values from the database
-    /// and collect the result in HashMap in a way were hash map key is song name and title
-    /// and value is a number of all hash keys that holds the song as a value
+    /// Get all fingerprints with corresponding songs list, then calculate hash map collection
+    /// by the song title and author as a key and number of fingerprints it occurred as a value
     /// 
     /// # Arguments:
-    /// * fingerprints - collection of all fingerprints that We want to get songs for
+    /// * fingerprints - collection of all fingerprints that We want to match songs against
     /// 
-    /// # Returns - Hash map of song title and author value of counted occurrence of the song along all fingerprints
+    /// # Returns - Success of Hash map representing match count if query result is success,
+    /// or dynamic Error otherwise
     /// 
-    fn get_many(&mut self, fingerprints: Vec<usize>) -> Result<HashMap<String, usize>, Box<dyn Error>>;
+    fn find_matches(&mut self, fingerprints: &Vec<usize>) -> Result<HashMap<String, usize>, Box<dyn Error>>;
 }

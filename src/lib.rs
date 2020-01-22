@@ -23,6 +23,7 @@ mod tests {
         println!("Number of fingerprints in collection is {}", &fingerprint_collection.len());
     }
     #[test]
+    #[ignore]
     fn test_calc_fingerprint_collection_long() {
         let start_time = Instant::now();
         let fingerprint_handler = super::fingerprint::FingerprintHandle::new();
