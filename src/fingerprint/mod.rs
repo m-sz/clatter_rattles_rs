@@ -88,7 +88,6 @@ fn hash(arr: &[usize]) -> usize {
 #[cfg(test)]
 mod tests {
     use rand::prelude::*;
-    use rustfft::num_traits::Zero;
     #[test]
     fn test_hash() {
         let record_points_0 = vec![32 ,45, 100, 140, 235, 300];
