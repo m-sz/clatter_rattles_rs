@@ -11,7 +11,7 @@ mod tests {
         let fingerprint_handler = super::fingerprint::FingerprintHandle::new();
         let fingerprint_collection = fingerprint_handler
             .calc_fingerprint_collection(
-                &super::helpers::decode_mp3(&format!("./assets/sample.mp3")).unwrap(),
+                &super::helpers::decode_mp3_from_file(&format!("./assets/sample.mp3")).unwrap(),
             )
             .unwrap();
         for fingerprint in fingerprint_collection.iter() {
@@ -41,7 +41,7 @@ mod tests {
         let fingerprint_handler = super::fingerprint::FingerprintHandle::new();
         let fingerprint_collection = fingerprint_handler
             .calc_fingerprint_collection(
-                &super::helpers::decode_mp3(&format!(
+                &super::helpers::decode_mp3_from_file(&format!(
                     "./assets/red_hot_chili_peppers_dark_necessities.mp3"
                 ))
                 .unwrap(),

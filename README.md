@@ -19,7 +19,7 @@
 ## Development
 
 - Test it with `cargo test -- --nocapture`
-- Building. Please buld with `RUSTFLAGS="--emit=asm"` flag enabled force the compiler to use a single LLVM module for the entire crate which allows LLVM to optimize better.
+- Building. Please build with `RUSTFLAGS="--emit=asm"` flag enabled force the compiler to use a single LLVM module for the entire crate which allows LLVM to optimize better.
 
 ## WORK IN PROGRESS - TODO
 

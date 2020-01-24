@@ -10,11 +10,13 @@ const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array
 const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the hash entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
+#[allow(dead_code)]
 pub struct FingerprintHandle {
     /// FFT algorithm
     fft: Radix4<f32>,
 }
 
+#[allow(dead_code)]
 impl FingerprintHandle {
     pub fn new() -> FingerprintHandle {
         FingerprintHandle {

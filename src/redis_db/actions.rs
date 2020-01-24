@@ -7,6 +7,7 @@ pub struct RedisHelper {
     connection: Connection,
 }
 
+#[allow(dead_code)]
 impl RedisHelper {
     /// Connects to the redis database and set a connection helper
     ///
