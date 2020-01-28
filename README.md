@@ -2,7 +2,7 @@
 
 <p align="center">
     <img 
-    width="100%" height="100%"
+    width="70%" height="70%"
     src="https://github.com/bartOssh/clatter_rattles_rs/blob/master/assets/logo.jpg"/>
 </p>
 
@@ -15,10 +15,15 @@
 
 - Secondary feature is to offer finding samples of fingerprint hashes in the collection that are the most fitted reflection of the given sample to compare against. This approach is focusing on the fastest way of leveraging database hash lookup.
 
-
 ## Development
 
+### Testing
+
+- Run local redis database with `systemctl start redis-server.service`
 - Test it with `cargo test -- --nocapture`
+
+### Building
+
 - Building. Please build with `RUSTFLAGS="--emit=asm"` flag enabled force the compiler to use a single LLVM module for the entire crate which allows LLVM to optimize better.
 
 ## WORK IN PROGRESS - TODO

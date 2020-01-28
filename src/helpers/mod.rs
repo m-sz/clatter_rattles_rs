@@ -20,6 +20,23 @@ pub fn decode_mp3_from_file(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> 
     decode_frames(&mut decoder)
 }
 
+/// Mp3 decoding stream chunk function.
+///
+/// Decoding is done using `minimp3.`
+/// Samples are read frame by frame and pushed to the vector.
+/// Conversion to mono is done by simply taking the mean of left and right channels.
+/// 
+/// # Arguments:
+/// * chunk - readable chunk of data encoded in mp3 format
+/// 
+/// # Returns - success of decoded frames, dynamic error otherwise
+/// 
+#[allow(dead_code)]
+pub fn decode_mp3_from_chunk<R: Read>(chunk: R) -> Result<Vec<f32>, Box<dyn Error>> {
+    let mut decoder = Decoder::new(chunk);
+    decode_frames(&mut decoder)
+}
+
 #[allow(dead_code)]
 fn decode_frames<R: Read>(decoder: &mut Decoder<R>) -> Result<Vec<f32>, Box<dyn Error>> {
     let mut frames = Vec::new();
@@ -40,7 +57,6 @@ fn decode_frames<R: Read>(decoder: &mut Decoder<R>) -> Result<Vec<f32>, Box<dyn 
             Err(e) => return Err(Box::from(e)),
         }
     }
-
     Ok(frames)
 }
 

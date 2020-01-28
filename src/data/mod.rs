@@ -1,4 +1,5 @@
-pub mod actions;
+pub mod redis_actions;
+pub mod stream_actions;
 use std::error::Error;
 use std::collections::HashMap;
 
