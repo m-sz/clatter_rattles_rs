@@ -124,7 +124,7 @@ mod test {
         }
         println!(
             "Adding to database of 2 songs of total {} fingerprints took {} milliseconds",
-            fingerprint_1_max + fingerprint_2_max,
+            fingerprint_2_max,
             start_time.elapsed().as_millis()
         );
         let half_time = Instant::now();
