@@ -12,7 +12,7 @@ use std::fs::File;
 /// # Arguments:
 /// * filename - path to the mp3 file we want to decode
 /// 
-/// # Returns - success of decoded frames, dynamic error otherwise
+/// # Returns success of decoded frames, dynamic error otherwise
 /// 
 #[allow(dead_code)]
 pub fn decode_mp3_from_file(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
@@ -29,7 +29,7 @@ pub fn decode_mp3_from_file(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> 
 /// # Arguments:
 /// * chunk - readable chunk of data encoded in mp3 format
 /// 
-/// # Returns - success of decoded frames, dynamic error otherwise
+/// # Returns success of decoded frames, dynamic error otherwise
 /// 
 #[allow(dead_code)]
 pub fn decode_mp3_from_chunk<R: Read>(chunk: R) -> Result<Vec<f32>, Box<dyn Error>> {

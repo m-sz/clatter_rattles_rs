@@ -14,7 +14,7 @@ impl RedisHelper {
     /// #Arguments:
     /// * addr - address to the instance of redis database f.e: "redis://127.0.0.1/"
     ///
-    /// # Returns - success of Self if connection is established, dynamic Error otherwise
+    /// # Returns success of Self if connection is established, dynamic Error otherwise
     ///
     pub fn new(addr: &str) -> Result<Self, Box<dyn Error>> {
         let client = Client::open(addr)?;

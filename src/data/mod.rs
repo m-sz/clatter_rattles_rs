@@ -2,7 +2,6 @@ pub mod redis_actions;
 pub mod stream_actions;
 use std::error::Error;
 use std::collections::HashMap;
-use m3u8_rs::playlist::Playlist;
 
 trait Repository {
     /// Index all given fingerprints by adding or updating fingerprint as a key 
@@ -12,7 +11,7 @@ trait Repository {
     /// * fingerprints - collection of all fingerprints for a given song
     /// * song - author and title of a song in one string
     /// 
-    /// # Return - Success if whole query is done successfully or dynamic Error otherwise
+    /// # Return success if whole query is done successfully or dynamic Error otherwise
     ///  
     fn store(&mut self, fingerprints: &Vec<usize>, song: &String) -> Result<(), Box<dyn Error>>;
 
@@ -22,16 +21,16 @@ trait Repository {
     /// # Arguments:
     /// * fingerprints - collection of all fingerprints that We want to match songs against
     /// 
-    /// # Returns - Success of Hash map representing match count if query result is success,
+    /// # Returns success of Hash map representing match count if query result is success,
     /// or dynamic Error otherwise
     /// 
     fn find_matches(&mut self, fingerprints: &Vec<usize>) -> Result<HashMap<String, usize>, Box<dyn Error>>;
 }
 
-trait PlaylistHelper<Playlist> {
+trait PlaylistHelper {
     /// Finds uri located inside playlist
     /// 
-    /// # Return - Success of uri string if present or Error otherwise
+    /// # Return success of uri string if present or Error otherwise
     /// 
     fn find_uri(&self) -> Result<String, Box<dyn Error>>;
 }
