@@ -1,4 +1,4 @@
-use super::PlaylistHelper;
+use super::{decode_mp3_from_chunk, PlaylistHelper};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
@@ -8,6 +8,26 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
+use bytes::Buf;
+use std::io::Read;
+
+// impl Read for Bytes {
+//     fn read(&mut self, buf: &mut [u8]) -> Result<usize, Box<dyn Error>> {
+//         let _buf = Vec::new();
+//         self.bytes().into_iter().for_each(|bit| {
+//             _buf.push(bit);
+//         });
+//         Ok(self.len())
+//     }
+// }
+
+struct ReadableBuffer {
+    data: Vec<u8>,
+}
+
+impl Read for ReadableBuffer {
+    // read fn here
+}
 
 #[derive(Clone, Debug)]
 pub struct StreamListener {
@@ -76,13 +96,15 @@ impl StreamListener {
     /// Runs listener ins separate thread that collects stream and feeds pipe sender
     ///
     /// # Returns success of thread join handle if listener is not active and async block has no errors, dyn Error otherwise
-    /// 
+    ///
     pub async fn run_mp3(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
         if *self.is_active.lock().unwrap() == true {
             return Err(Box::from(format!(
                 "Listener is active and should be deactivated first"
             )));
         }
+        *self.is_active.lock().unwrap() = true;
+        // TODO: set self as Arc<Mutex> owned
         let uri = self.uri.clone();
         let sender = self.sender.clone();
         let is_active = self.is_active.clone();
@@ -124,9 +146,16 @@ async fn listen_mp3_stream(
     while let Some(chunk) = res.chunk().await? {
         if *is_active.lock().unwrap() == false {
             // stop the process and exit
+            println!("stop");
             process::exit(0x0100);
         };
         println!("Chunk: {:?}", chunk);
+        let mut buffer = ReadableBuffer { data: Vec::new() };
+        chunk.bytes().into_iter().for_each(|bit| {
+            buffer.data.push(*bit);
+        });
+        let decoded = decode_mp3_from_chunk(buffer);
+        // sender.send()
     }
     Ok(())
 }
@@ -178,6 +207,7 @@ mod test {
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
             println!("{:?}", &a);
             a.join().unwrap();
+            listener.deactivate();
         };
     }
 }
