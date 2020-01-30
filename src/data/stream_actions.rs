@@ -24,32 +24,33 @@ struct StreamListener {
     is_active: bool,
 }
 
+#[derive(Clone, Debug)]
 pub struct ArcStreamListener(Arc<Mutex<StreamListener>>);
 
-impl Read for ReadableBuffer {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize, ErrorIo> {
-        let mut _buf = Vec::new();
-        if self.data.len() < 1 {
-            return Err(ErrorIo::from(ErrorKind::InvalidData));
-        }
-        self.bytes().into_iter().for_each(|bite| {
-            if let Ok(_bite) = bite {
-                _buf.push(_bite);
-            }
-        });
-        *buf = _buf;
-        Ok(self.data.len())
-    }
-}
+// impl Read for ReadableBuffer {
+//     fn read(&mut self, buf: &mut [u8]) -> Result<usize, ErrorIo> {
+//         let mut _buf = Vec::new();
+//         if self.data.len() < 1 {
+//             return Err(ErrorIo::from(ErrorKind::InvalidData));
+//         }
+//         self.bytes().into_iter().for_each(|bite| {
+//             if let Ok(_bite) = bite {
+//                 _buf.push(_bite);
+//             }
+//         });
+//         *buf = _buf;
+//         Ok(self.data.len())
+//     }
+// }
 
 
 impl ReadableBuffer {
     fn from_bytes(bytes_buf: &Bytes) -> Self {
         let mut data = Vec::new();
+        let bytes_read = 0;
         bytes_buf.bytes().into_iter().for_each(|bite| {
             data.push(*bite);
         });
-        let bytes_read = 0;
         Self { data , bytes_read }
     }
 }
@@ -121,7 +122,7 @@ impl ArcStreamListener {
             )));
         }
         self.0.lock().unwrap().is_active = true;
-        let listener_clone = *self.clone();
+        let listener_clone = self.clone();
         let stream_listener_proc = thread::spawn(move || {
             if let Err(e) = Runtime::new()
                 .unwrap()
@@ -152,7 +153,7 @@ impl PlaylistHelper for MasterPlaylist {
 }
 
 async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Error + 'static>> {
-    let mut res = reqwest::get(listener.0.lock().unwrap().uri).await?;
+    let mut res = reqwest::get(listener.0.lock().unwrap().uri.clone()).await?;
     while let Some(chunk) = res.chunk().await? {
         if listener.0.lock().unwrap().is_active == false {
             // stop the process and exit
@@ -160,7 +161,7 @@ async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Er
             process::exit(0x0100);
         };
         println!("Chunk: {:?}", chunk);
-        let decoded = decode_mp3_from_chunk(ReadableBuffer::from_bytes(&chunk));
+        // let decoded = decode_mp3_from_chunk(ReadableBuffer::from_bytes(&chunk));
         // sender.send()
     }
     Ok(())
@@ -196,6 +197,8 @@ mod test {
     use super::Runtime;
     use super::ArcStreamListener;
     use futures_await_test::async_test;
+    use std::thread::sleep;
+    use std::time::Duration;
 
     #[async_test]
     async fn test_get_m3u8_stream() {
@@ -212,8 +215,9 @@ mod test {
         ).unwrap();
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
             println!("{:?}", &a);
-            a.join().unwrap();
+            sleep(Duration::from_secs(5));
             listener.deactivate();
+            a.join().unwrap();
         };
     }
 }
