@@ -1,15 +1,16 @@
 use super::{decode_mp3_from_chunk, PlaylistHelper};
+use bytes::{Buf, Bytes};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
 use std::error::Error;
+use std::io::{Error as ErrorIo, ErrorKind, Read};
+use std::mem::drop;
 use std::process;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
-use bytes::{Buf, Bytes};
-use std::io::{Error as ErrorIo, ErrorKind, Read};
 
 struct ReadableBuffer {
     data: Vec<u8>,
@@ -27,22 +28,33 @@ struct StreamListener {
 #[derive(Clone, Debug)]
 pub struct ArcStreamListener(Arc<Mutex<StreamListener>>);
 
-// impl Read for ReadableBuffer {
-//     fn read(&mut self, buf: &mut [u8]) -> Result<usize, ErrorIo> {
-//         let mut _buf = Vec::new();
-//         if self.data.len() < 1 {
-//             return Err(ErrorIo::from(ErrorKind::InvalidData));
-//         }
-//         self.bytes().into_iter().for_each(|bite| {
-//             if let Ok(_bite) = bite {
-//                 _buf.push(_bite);
-//             }
-//         });
-//         *buf = _buf;
-//         Ok(self.data.len())
-//     }
-// }
-
+impl Read for ReadableBuffer {
+    // TODO, docs
+    //
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, ErrorIo> {
+        if self.data.len() == 0 || self.bytes_read == self.data.len() {
+            drop(self);
+            return Err(ErrorIo::from(ErrorKind::InvalidData));
+        } else if buf.len() == 0 {
+            return Err(ErrorIo::from(ErrorKind::InvalidInput));
+        }
+        let mut _read: usize = 0;
+        loop {
+            if _read < buf.len() && self.bytes_read < self.data.len() {
+                let bite = self.data[self.bytes_read];
+                buf[_read] = bite;
+                _read += 1;
+                self.bytes_read += 1;
+                if self.bytes_read == self.data.len() {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        Ok(_read)
+    }
+}
 
 impl ReadableBuffer {
     fn from_bytes(bytes_buf: &Bytes) -> Self {
@@ -51,7 +63,7 @@ impl ReadableBuffer {
         bytes_buf.bytes().into_iter().for_each(|bite| {
             data.push(*bite);
         });
-        Self { data , bytes_read }
+        Self { data, bytes_read }
     }
 }
 
@@ -160,8 +172,12 @@ async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Er
             println!("stop");
             process::exit(0x0100);
         };
-        println!("Chunk: {:?}", chunk);
-        // let decoded = decode_mp3_from_chunk(ReadableBuffer::from_bytes(&chunk));
+        // println!("Chunk: {:?}", chunk);
+        let readable_buffer = ReadableBuffer::from_bytes(&chunk);
+        let mut arr: Vec<u8> = vec![0; readable_buffer.data.len()];
+        // TODO: resolve reading from buffer
+        // let decoded = decode_mp3_from_chunk();
+        // println!("\n Decoded {:?} \n", &decoded);
         // sender.send()
     }
     Ok(())
@@ -194,8 +210,7 @@ async fn get_from_as_string(uri: &Url) -> Result<String, Box<dyn Error + 'static
 
 #[cfg(test)]
 mod test {
-    use super::Runtime;
-    use super::ArcStreamListener;
+    use super::{Runtime, ReadableBuffer, ArcStreamListener, Read};
     use futures_await_test::async_test;
     use std::thread::sleep;
     use std::time::Duration;
@@ -219,5 +234,72 @@ mod test {
             listener.deactivate();
             a.join().unwrap();
         };
+    }
+
+    #[test]
+    fn test_read_from_buffer() {
+        let data: Vec<u8> = vec![1,2,3,4,5,6,7,8,9,10,11];
+        let bytes_read = 0;
+        let mut buf_read = ReadableBuffer { data, bytes_read };
+        let mut buf_write: [u8; 2] = [0; 2];
+        let res = buf_read.read(&mut buf_write);
+        println!("--- Read from buffer test info, look in to file to get head around cases... ---");
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(buf_write[0], 1);
+        assert_eq!(buf_write[1], 2);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(buf_write[0], 3);
+        assert_eq!(buf_write[1], 4);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(buf_write[0], 5);
+        assert_eq!(buf_write[1], 6);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(buf_write[0], 7);
+        assert_eq!(buf_write[1], 8);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(buf_write[0], 9);
+        assert_eq!(buf_write[1], 10);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 1);
+        assert_eq!(buf_write[0], 11);
+        assert_eq!(buf_write[1], 10);
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        if let Err(_) = res {
+            assert_eq!(1, 1);
+        } else {
+            assert_eq!(1, 2);
+        }
+        assert_eq!(buf_write[0], 11);
+        assert_eq!(buf_write[1], 10);
+        // test vector
+        let data: Vec<u8> = vec![1,2,3,4,5,6,7,8,9,10,11];
+        let bytes_read = 0;
+        let mut buf_read = ReadableBuffer { data, bytes_read };
+        let mut buf_write: Vec<u8> = vec![0; buf_read.data.len()];
+        let res = buf_read.read(&mut buf_write);
+        println!("{:?}", &res);
+        println!("{:?}", &buf_write);
+        assert_eq!(res.unwrap(), 11);
+        assert_eq!(buf_write[0], 1);
+        assert_eq!(buf_write[10], 11);
+        println!("--- Read buffer test finished ---");
     }
 }
