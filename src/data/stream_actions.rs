@@ -4,7 +4,6 @@ use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
 use std::error::Error;
 use std::io::Cursor;
-use std::process;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
@@ -122,9 +121,8 @@ async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Er
     let mut res = reqwest::get(listener.0.lock().unwrap().uri.clone()).await?;
     while let Some(chunk) = res.chunk().await? {
         if listener.0.lock().unwrap().is_active == false {
-            // stop the process and exit
-            // println!("\n Stopped \n");
-            process::exit(0x0100);
+            // stop loop and finish listening
+            break;
         };
         let readable_buffer = Cursor::new(chunk);
         let decoded = decode_mp3_from_chunk(readable_buffer);
@@ -203,7 +201,7 @@ mod test {
             }
         });
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
-            sleep(Duration::from_secs(8));
+            sleep(Duration::from_secs(10));
             listener.deactivate();
             a.join().unwrap();
             reader.join().unwrap();

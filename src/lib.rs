@@ -19,6 +19,18 @@ fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
+    use super::data::redis_actions::RedisHelper;
+    use super::data::Repository;
+    use super::fingerprint::FingerprintHandle;
+    use super::helpers::decode_mp3_from_file;
+    use super::pick_most_likely;
+    use super::data::stream_actions::ArcStreamListener;
+    use futures_await_test::async_test;
+    use std::thread;
+    use std::thread::sleep;
+    use std::time::Duration;
+    use tokio::runtime::Runtime;
+
     #[test]
     fn test_calc_fingerprint_collection_short() {
         let start_time = Instant::now();
@@ -77,12 +89,6 @@ mod tests {
         );
     }
 
-    use super::data::redis_actions::RedisHelper;
-    use super::data::Repository;
-    use super::fingerprint::FingerprintHandle;
-    use super::helpers::decode_mp3_from_file;
-    use super::pick_most_likely;
-
     #[test]
     fn test_matching_algorithm() {
         let fingerprint_handle = FingerprintHandle::new();
@@ -116,13 +122,6 @@ mod tests {
         let best_fit = pick_most_likely(&findings);
         println!("{:?}", &best_fit);
     }
-
-    use super::data::stream_actions::ArcStreamListener;
-    use futures_await_test::async_test;
-    use std::thread;
-    use std::thread::sleep;
-    use std::time::Duration;
-    use tokio::runtime::Runtime;
 
     #[async_test]
     // #[ignore]
@@ -165,7 +164,7 @@ mod tests {
             }
         });
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
-            sleep(Duration::from_secs(100));
+            sleep(Duration::from_secs(10));
             listener.deactivate();
             a.join().unwrap();
             reader.join().unwrap();

@@ -61,7 +61,7 @@ mod test {
     use super::{RedisHelper, Repository};
     use std::time::Instant;
     #[test]
-    #[ignore]
+    // #[ignore]
     fn test_repository() {
         let fake_fingerprints_1: Vec<usize> = vec![
             1234567890, 1987654321, 1290347856, 1111111111, 2222222222, 3333333333, 4444444444,
@@ -98,7 +98,7 @@ mod test {
         }
     }
     #[test]
-    #[ignore]
+    // #[ignore]
     fn test_benchmark_repository() {
         let mut fake_fingerprints_1: Vec<usize> = Vec::new();
         let mut fake_fingerprints_2: Vec<usize> = Vec::new();
