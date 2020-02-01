@@ -2,6 +2,20 @@ mod data;
 mod fingerprint;
 mod helpers;
 
+use std::collections::HashMap;
+
+#[allow(dead_code)]
+fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
+    let mut best_fit: (String, usize) = (format!("Not found matching song"), 0);
+    for (song, val) in findings.iter() {
+        if *val > best_fit.1 {
+            best_fit.0 = song.clone();
+            best_fit.1 = *val;
+        }
+    }
+    best_fit
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
@@ -67,44 +81,39 @@ mod tests {
     use super::data::Repository;
     use super::fingerprint::FingerprintHandle;
     use super::helpers::decode_mp3_from_file;
+    use super::pick_most_likely;
 
     #[test]
     fn test_matching_algorithm() {
         let fingerprint_handle = FingerprintHandle::new();
         let mut redis = RedisHelper::new(&"redis://127.0.0.1/").unwrap();
         let path = "./assets/";
-        let sample = "sample.mp3";
-        // let files = [
-        //     "Red Hot Chili Peppers - By The Way.mp3",
-        //     "Red Hot Chili Peppers - Californication.mp3",
-        //     "Red Hot Chili Peppers - Can't Stop.mp3",
-        //     "Red Hot Chili Peppers - Give It Away.mp3",
-        //     "Red Hot Chili Peppers - Otherside.mp3",
-        //     "Red Hot Chili Peppers - Snow.mp3",
-        //     "Red Hot Chili Peppers - Wet Sand.mp3",
-        //     "red_hot_chili_peppers_dark_necessities.mp3",
-        // ];
-        // for file in files.iter() {
-        //     let path = format!("{}{}", &path, &file);
-        //     let decoded = decode_mp3_from_file(&path).unwrap();
-        //     let fingerprints = fingerprint_handle
-        //         .calc_fingerprint_collection(&decoded)
-        //         .unwrap();
-        //     redis.store(&fingerprints, &format!("{}", file)).unwrap();
-        // }
+        let sample = "sample.mp3"; 
+        let files = [
+            "Red Hot Chili Peppers - By The Way.mp3",
+            "Red Hot Chili Peppers - Californication.mp3",
+            "Red Hot Chili Peppers - Can't Stop.mp3",
+            "Red Hot Chili Peppers - Give It Away.mp3",
+            "Red Hot Chili Peppers - Otherside.mp3",
+            "Red Hot Chili Peppers - Snow.mp3",
+            "Red Hot Chili Peppers - Wet Sand.mp3",
+            "red_hot_chili_peppers_dark_necessities.mp3",
+        ];
+        for file in files.iter() {
+            let path = format!("{}{}", &path, &file);
+            let decoded = decode_mp3_from_file(&path).unwrap();
+            let fingerprints = fingerprint_handle
+                .calc_fingerprint_collection(&decoded)
+                .unwrap();
+            redis.store(&fingerprints, &format!("{}", file)).unwrap();
+        }
         let path = format!("{}{}", &path, &sample);
         let decoded = decode_mp3_from_file(&path).unwrap();
         let fingerprints = fingerprint_handle
             .calc_fingerprint_collection(&decoded)
             .unwrap();
         let findings = redis.find_matches(&fingerprints).unwrap();
-        let mut best_fit: (String, usize) = (format!("Not found any matching song"), 0);
-        for (song, val) in findings.iter() {
-            if *val > best_fit.1 {
-                best_fit.0 = song.clone();
-                best_fit.1 = *val;
-            }
-        }
+        let best_fit = pick_most_likely(&findings);
         println!("{:?}", &best_fit);
     }
 

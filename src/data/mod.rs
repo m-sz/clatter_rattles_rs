@@ -31,7 +31,7 @@ pub trait Repository {
     ) -> Result<HashMap<String, usize>, Box<dyn Error>>;
 }
 
-trait PlaylistHelper {
+pub trait PlaylistHelper {
     /// Finds uri located inside playlist
     ///
     /// # Return success of uri string if present or Error otherwise
