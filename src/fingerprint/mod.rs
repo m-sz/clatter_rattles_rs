@@ -4,6 +4,7 @@ use rustfft::num_complex::Complex;
 use rustfft::num_traits::Zero;
 use rustfft::FFT;
 use std::error::Error;
+use std::sync::{Arc, Mutex};
 
 const FFT_WINDOW_SIZE: usize = 4096; // chunk window size to process by fast forward fourier function
 const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
@@ -39,20 +40,20 @@ impl FingerprintHandle {
     pub fn calc_fingerprint_collection(
         &self,
         decoded_stream: &[f32],
-    ) -> Result<Vec<Option<usize>>, Box<dyn Error>> {
-        let hash_array = decoded_stream
+    ) -> Result<Vec<usize>, Box<dyn Error>> {
+        let hash_array: Arc<Mutex<Vec<usize>>> = Arc::new(Mutex::new(Vec::new()));
+        decoded_stream
             .par_chunks(FFT_WINDOW_SIZE) // multi threaded iteration over chunks, where chunk of size FFT_WINDOW_SIZE
-            .map(|chunk| {
+            .for_each(|chunk| {
                 if chunk.len() >= FFT_WINDOW_SIZE {
                     let mut input: Vec<Complex<f32>> = chunk.iter().map(Complex::from).collect();
                     let mut output: Vec<Complex<f32>> = vec![Complex::zero(); FFT_WINDOW_SIZE];
                     self.fft.process(&mut input, &mut output);
-                    return Some(calculate_fingerprint_hash(&output));
+                    hash_array.lock().unwrap().push(calculate_fingerprint_hash(&output));
                 }
-                None
-            })
-            .collect();
-        Ok(hash_array)
+            });
+        let arr = hash_array.lock().unwrap().clone();
+        Ok(arr)
     }
 }
 

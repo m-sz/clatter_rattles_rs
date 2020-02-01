@@ -15,14 +15,12 @@ mod tests {
             )
             .unwrap();
         for fingerprint in fingerprint_collection.iter() {
-            if let Some(fingerprint) = fingerprint {
-                if *fingerprint != 0 {
-                    let fingerprint_log10 = (*fingerprint as f64).log10();
-                    assert_eq!(
-                        fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
-                        true
-                    );
-                }
+            if *fingerprint != 0 {
+                let fingerprint_log10 = (*fingerprint as f64).log10();
+                assert_eq!(
+                    fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
+                    true
+                );
             }
         }
         println!(
@@ -35,7 +33,6 @@ mod tests {
         );
     }
     #[test]
-    // #[ignore]
     fn test_calc_fingerprint_collection_long() {
         let start_time = Instant::now();
         let fingerprint_handler = super::fingerprint::FingerprintHandle::new();
@@ -48,14 +45,12 @@ mod tests {
             )
             .unwrap();
         for fingerprint in fingerprint_collection.iter() {
-            if let Some(fingerprint) = fingerprint {
-                if *fingerprint != 0 {
-                    let fingerprint_log10 = (*fingerprint as f64).log10();
-                    assert_eq!(
-                        fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
-                        true
-                    );
-                }
+            if *fingerprint != 0 {
+                let fingerprint_log10 = (*fingerprint as f64).log10();
+                assert_eq!(
+                    fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
+                    true
+                );
             }
         }
         println!(
@@ -67,6 +62,52 @@ mod tests {
             &fingerprint_collection.len()
         );
     }
+
+    use super::data::redis_actions::RedisHelper;
+    use super::data::Repository;
+    use super::fingerprint::FingerprintHandle;
+    use super::helpers::decode_mp3_from_file;
+
+    #[test]
+    fn test_matching_algorithm() {
+        let fingerprint_handle = FingerprintHandle::new();
+        let mut redis = RedisHelper::new(&"redis://127.0.0.1/").unwrap();
+        let path = "./assets/";
+        let sample = "sample.mp3";
+        // let files = [
+        //     "Red Hot Chili Peppers - By The Way.mp3",
+        //     "Red Hot Chili Peppers - Californication.mp3",
+        //     "Red Hot Chili Peppers - Can't Stop.mp3",
+        //     "Red Hot Chili Peppers - Give It Away.mp3",
+        //     "Red Hot Chili Peppers - Otherside.mp3",
+        //     "Red Hot Chili Peppers - Snow.mp3",
+        //     "Red Hot Chili Peppers - Wet Sand.mp3",
+        //     "red_hot_chili_peppers_dark_necessities.mp3",
+        // ];
+        // for file in files.iter() {
+        //     let path = format!("{}{}", &path, &file);
+        //     let decoded = decode_mp3_from_file(&path).unwrap();
+        //     let fingerprints = fingerprint_handle
+        //         .calc_fingerprint_collection(&decoded)
+        //         .unwrap();
+        //     redis.store(&fingerprints, &format!("{}", file)).unwrap();
+        // }
+        let path = format!("{}{}", &path, &sample);
+        let decoded = decode_mp3_from_file(&path).unwrap();
+        let fingerprints = fingerprint_handle
+            .calc_fingerprint_collection(&decoded)
+            .unwrap();
+        let findings = redis.find_matches(&fingerprints).unwrap();
+        let mut best_fit: (String, usize) = (format!("Not found any matching song"), 0);
+        for (song, val) in findings.iter() {
+            if *val > best_fit.1 {
+                best_fit.0 = song.clone();
+                best_fit.1 = *val;
+            }
+        }
+        println!("{:?}", &best_fit);
+    }
+
     use super::data::stream_actions::ArcStreamListener;
     use futures_await_test::async_test;
     use std::thread;
@@ -96,15 +137,13 @@ mod tests {
                         .calc_fingerprint_collection(&collected)
                         .unwrap();
                     for fingerprint in fingerprint_collection.iter() {
-                        if let Some(fingerprint) = fingerprint {
-                            if *fingerprint != 0 {
-                                let fingerprint_log10 = (*fingerprint as f64).log10();
-                                println!("\nFingerprint for stream: {:?}", &fingerprint);
-                                assert_eq!(
-                                    fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
-                                    true
-                                );
-                            }
+                        if *fingerprint != 0 {
+                            let fingerprint_log10 = (*fingerprint as f64).log10();
+                            println!("\nFingerprint for stream: {:?}", &fingerprint);
+                            assert_eq!(
+                                fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
+                                true
+                            );
                         }
                     }
                     collected.clear();
@@ -117,7 +156,7 @@ mod tests {
             }
         });
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
-            sleep(Duration::from_secs(8));
+            sleep(Duration::from_secs(100));
             listener.deactivate();
             a.join().unwrap();
             reader.join().unwrap();

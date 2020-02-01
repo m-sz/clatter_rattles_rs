@@ -4,7 +4,7 @@ pub mod stream_actions;
 use std::collections::HashMap;
 use std::error::Error;
 
-trait Repository {
+pub trait Repository {
     /// Index all given fingerprints by adding or updating fingerprint as a key
     /// and song as a value in to database
     ///
