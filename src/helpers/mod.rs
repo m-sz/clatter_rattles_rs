@@ -1,19 +1,19 @@
 use minimp3::{Decoder, Frame};
 use std::error::Error;
-use std::io::Read;
 use std::fs::File;
+use std::io::Read;
 
 /// Mp3 decoding file function.
 ///
 /// Decoding is done using `minimp3.`
 /// Samples are read frame by frame and pushed to the vector.
 /// Conversion to mono is done by simply taking the mean of left and right channels.
-/// 
+///
 /// # Arguments:
 /// * filename - path to the mp3 file we want to decode
-/// 
+///
 /// # Returns success of decoded frames, dynamic error otherwise
-/// 
+///
 #[allow(dead_code)]
 pub fn decode_mp3_from_file(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> {
     let mut decoder = Decoder::new(File::open(filename)?);
@@ -25,12 +25,12 @@ pub fn decode_mp3_from_file(filename: &str) -> Result<Vec<f32>, Box<dyn Error>> 
 /// Decoding is done using `minimp3.`
 /// Samples are read frame by frame and pushed to the vector.
 /// Conversion to mono is done by simply taking the mean of left and right channels.
-/// 
+///
 /// # Arguments:
 /// * chunk - readable chunk of data encoded in mp3 format
-/// 
+///
 /// # Returns success of decoded frames, dynamic error otherwise
-/// 
+///
 #[allow(dead_code)]
 pub fn decode_mp3_from_chunk<R: Read>(chunk: R) -> Result<Vec<f32>, Box<dyn Error>> {
     let mut decoder = Decoder::new(chunk);
@@ -70,6 +70,7 @@ mod test {
         let filename = format!("./assets/sample.mp3");
         let decoded_stream = super::decode_mp3_from_file(&filename);
         if let Ok(stream) = decoded_stream {
+            println!("\nDecoded bytes: {:?} \n", &stream.len());
             assert_eq!(stream.len(), 619776);
         } else {
             assert_eq!(1, 2);

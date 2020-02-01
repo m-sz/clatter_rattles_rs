@@ -1,9 +1,9 @@
-use std::error::Error;
+use rayon::prelude::*;
 use rustfft::algorithm::Radix4;
 use rustfft::num_complex::Complex;
 use rustfft::num_traits::Zero;
 use rustfft::FFT;
-use rayon::prelude::*;
+use std::error::Error;
 
 const FFT_WINDOW_SIZE: usize = 4096; // chunk window size to process by fast forward fourier function
 const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
@@ -27,21 +27,23 @@ impl FingerprintHandle {
     /// Calculate fingerprint for decoded stream
     ///
     /// This method uses fast forward fourier computation
-    /// to process decoded stream input in to 
-    /// stream of complex number output, 
+    /// to process decoded stream input in to
+    /// stream of complex number output,
     /// then calculates fingerprint hash
     ///
     /// # Arguments:
     /// * decoded_stream - music that is decoded to stream of floats
     ///
     /// # Returns success of fingerprint hash collection, dynamic error otherwise
-    /// 
-    pub fn calc_fingerprint_collection(&self, decoded_stream: &[f32]) -> Result<Vec<Option<usize>>, Box<dyn Error>> {
-
+    ///
+    pub fn calc_fingerprint_collection(
+        &self,
+        decoded_stream: &[f32],
+    ) -> Result<Vec<Option<usize>>, Box<dyn Error>> {
         let hash_array = decoded_stream
             .par_chunks(FFT_WINDOW_SIZE) // multi threaded iteration over chunks, where chunk of size FFT_WINDOW_SIZE
-            .map(|chunk| {                
-                if chunk.len() > FFT_WINDOW_SIZE {
+            .map(|chunk| {
+                if chunk.len() >= FFT_WINDOW_SIZE {
                     let mut input: Vec<Complex<f32>> = chunk.iter().map(Complex::from).collect();
                     let mut output: Vec<Complex<f32>> = vec![Complex::zero(); FFT_WINDOW_SIZE];
                     self.fft.process(&mut input, &mut output);
@@ -50,7 +52,6 @@ impl FingerprintHandle {
                 None
             })
             .collect();
-        
         Ok(hash_array)
     }
 }
@@ -77,7 +78,6 @@ fn calculate_fingerprint_hash(arr: &[Complex<f32>]) -> usize {
     hash(&record_points)
 }
 
-
 /// Hash function with reverse order
 fn hash(arr: &[usize]) -> usize {
     (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
@@ -92,7 +92,7 @@ mod tests {
     use rand::prelude::*;
     #[test]
     fn test_hash() {
-        let record_points_0 = vec![32 ,45, 100, 140, 235, 300];
+        let record_points_0 = vec![32, 45, 100, 140, 235, 300];
         let record_points_1 = vec![33, 45, 100, 145, 235, 300];
         assert_eq!(super::hash(&record_points_0), 2354010004432);
         assert_ne!(super::hash(&record_points_0), super::hash(&record_points_1));
@@ -102,11 +102,14 @@ mod tests {
         let mut rng = rand::thread_rng();
         let mut arr_f32: Vec<f32> = vec![0.0; super::FFT_WINDOW_SIZE];
         arr_f32.iter_mut().for_each(|complex_num| {
-            *complex_num =  rng.gen::<f32>() * 10000_f32;
+            *complex_num = rng.gen::<f32>() * 10000_f32;
         });
         let arr: Vec<super::Complex<f32>> = arr_f32.iter().map(super::Complex::from).collect();
         let fingerprint = super::calculate_fingerprint_hash(&arr);
         let fingerprint_log10 = (fingerprint as f64).log10();
-        assert_eq!(fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64, true);
+        assert_eq!(
+            fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
+            true
+        );
     }
 }

@@ -3,17 +3,12 @@ use crossbeam_channel::{unbounded, Receiver, Sender};
 use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
 use std::error::Error;
+use std::io::Cursor;
 use std::process;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
-use std::io::Cursor;
-
-// struct ReadableBuffer {
-//     data: Vec<u8>,
-//     bytes_read: usize,
-// }
 
 #[derive(Clone, Debug)]
 struct StreamListener {
@@ -128,16 +123,19 @@ async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Er
     while let Some(chunk) = res.chunk().await? {
         if listener.0.lock().unwrap().is_active == false {
             // stop the process and exit
-            println!("stop");
+            // println!("\n Stopped \n");
             process::exit(0x0100);
         };
-        // println!("Chunk: {:?}", chunk);
         let readable_buffer = Cursor::new(chunk);
-        // let readable_buffer = ReadableBuffer::from_bytes(&chunk);
-        // TODO: resolve reading from buffer
         let decoded = decode_mp3_from_chunk(readable_buffer);
-        // println!("\n Decoded {:?} \n", &decoded);
-        // sender.send()
+        match decoded {
+            Ok(_result) => {
+                if _result.len() > 0 {
+                    listener.0.lock().unwrap().sender.send(_result)?;
+                }
+            }
+            Err(_) => (),
+        }
     }
     Ok(())
 }
@@ -169,8 +167,9 @@ async fn get_from_as_string(uri: &Url) -> Result<String, Box<dyn Error + 'static
 
 #[cfg(test)]
 mod test {
-    use super::{Runtime, ArcStreamListener};
+    use super::{ArcStreamListener, Runtime};
     use futures_await_test::async_test;
+    use std::thread;
     use std::thread::sleep;
     use std::time::Duration;
 
@@ -180,17 +179,34 @@ mod test {
             format!("http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_high/ak/bbc_radio_two.m3u8")
         ).unwrap();
         let a = Runtime::new().unwrap().block_on(listener.run_m3u8());
-        println!("{:?}", &a);
+        println!("\nGetting m3ue stream {:?}\n", &a);
     }
     #[async_test]
     async fn test_get_mp3_stream() {
         let mut listener = ArcStreamListener::new(
             format!("https://str2b.openstream.co/604?aw_0_1st.collectionid=3162&stationId=3162&publisherId=628&listenerid=1580311050432_0.47836979431904714&awparams=companionAds%3Atrue&aw_0_1st.version=1.1.4%3Ahtml5")
         ).unwrap();
+        let receiver = listener.get_listener();
+        let reader = thread::spawn(move || {
+            let mut tested = false;
+            loop {
+                let decoded = receiver.recv().unwrap();
+                if !tested {
+                    tested = true;
+                    // testing is stream correct
+                    assert_eq!(decoded.len() > 0, true);
+                    println!(
+                        "\nReceived decoded stream of {:?} floats by crossbeam channel pipe",
+                        &decoded.len()
+                    );
+                }
+            }
+        });
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
-            sleep(Duration::from_secs(15));
+            sleep(Duration::from_secs(8));
             listener.deactivate();
             a.join().unwrap();
+            reader.join().unwrap();
         };
     }
 }

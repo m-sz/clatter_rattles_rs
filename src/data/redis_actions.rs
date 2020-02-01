@@ -123,7 +123,7 @@ mod test {
             assert_eq!(1, 2);
         }
         println!(
-            "Adding to database of 2 songs of total {} fingerprints took {} milliseconds",
+            "\nAdding to database of 2 songs of total {} fingerprints took {} milliseconds\n",
             fingerprint_2_max,
             start_time.elapsed().as_millis()
         );
@@ -141,7 +141,7 @@ mod test {
             assert_eq!(1, 2);
         }
         println!(
-            "Matching of total {} fingerprints took {} milliseconds",
+            "\nMatching of total {} fingerprints took {} milliseconds\n",
             fingerprint_1_max + fingerprint_2_max,
             half_time.elapsed().as_millis()
         );
