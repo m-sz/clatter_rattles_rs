@@ -1,13 +1,28 @@
+use crate::helpers::pick_most_likely;
 use super::{decode_mp3_from_chunk, PlaylistHelper};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
+use std::collections::HashMap;
 use std::error::Error;
 use std::io::Cursor;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
+
+/// Helps to watch matches between findings from the stream
+/// collected over more some chunks.
+///
+/// This struct collects all findings and counts all
+#[derive(Clone, Debug)]
+pub struct MatchesWatcher {
+    findings: HashMap<String, usize>,
+    fingerprints_count: usize,
+    fingerprints_threshold: usize,
+    chunks_count: usize,
+    chunks_threshold: usize,
+}
 
 #[derive(Clone, Debug)]
 struct StreamListener {
@@ -19,6 +34,63 @@ struct StreamListener {
 
 #[derive(Clone, Debug)]
 pub struct ArcStreamListener(Arc<Mutex<StreamListener>>);
+
+#[allow(dead_code)]
+impl MatchesWatcher {
+    /// Create instance of MatchesWatcher
+    /// 
+    /// # Arguments:
+    /// * fingerprints_threshold - threshold for fingerprints over which we have found song candidate
+    /// * chunks_threshold - threshold for max chunks to take to account for watching corresponding threshold
+    /// 
+    /// # Returns new instance of MatchesWatcher 
+    pub fn new(fingerprints_threshold: usize, chunks_threshold: usize) -> Self {
+        let findings = HashMap::new();
+        let fingerprints_count = 0;
+        let chunks_count = 0;
+        Self {
+            findings,
+            fingerprints_count,
+            fingerprints_threshold,
+            chunks_count,
+            chunks_threshold,
+        }
+    }
+    /// Feeds MatchesWatcher with findings
+    /// 
+    /// # Arguments:
+    /// * findings - collection of songs and value of matching fingerprints for one stream chunk
+    /// 
+    /// # Returns Option with tuple of sum of findings and difference between most likely match
+    ///           and fingerprints_count or None if none of thresholds has been met
+    /// 
+    pub fn feed(
+        &mut self,
+        findings: HashMap<String, usize>,
+    ) -> Option<(HashMap<String, usize>, usize)> {
+        for (song, value) in findings.iter() {
+            match self.findings.get_mut(song) {
+                Some(count) => {
+                    *count += value;
+                }
+                None => {
+                    self.findings.insert(song.clone(), *value);
+                }
+            };
+        }
+        self.fingerprints_count = pick_most_likely(&self.findings).1;
+        self.chunks_count += 1;
+        if self.fingerprints_count >= self.fingerprints_threshold
+            || self.chunks_count == self.chunks_threshold
+        {
+            let difference_from_threshold = self.fingerprints_threshold - self.fingerprints_count;
+            self.fingerprints_count = 0;
+            self.chunks_count = 0;
+            return Some((self.findings.clone(), difference_from_threshold));
+        }
+        None
+    }
+}
 
 #[allow(dead_code)]
 impl ArcStreamListener {

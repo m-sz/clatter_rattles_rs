@@ -2,20 +2,6 @@ mod data;
 mod fingerprint;
 mod helpers;
 
-use std::collections::HashMap;
-
-#[allow(dead_code)]
-fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
-    let mut best_fit: (String, usize) = (format!("Not found matching song"), 0);
-    for (song, val) in findings.iter() {
-        if *val > best_fit.1 {
-            best_fit.0 = song.clone();
-            best_fit.1 = *val;
-        }
-    }
-    best_fit
-}
-
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
@@ -23,7 +9,7 @@ mod tests {
     use super::data::Repository;
     use super::fingerprint::FingerprintHandle;
     use super::helpers::decode_mp3_from_file;
-    use super::pick_most_likely;
+    use super::helpers::pick_most_likely;
     use super::data::stream_actions::ArcStreamListener;
     use futures_await_test::async_test;
     use std::thread;

@@ -2,6 +2,26 @@ use minimp3::{Decoder, Frame};
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashMap;
+
+/// Pic the one that has highest value
+///
+/// # Arguments:
+/// * findings - collection of all songs with matching hash count as a value
+///
+/// # Returns tuple of best matching song, one with the highest value
+///
+#[allow(dead_code)]
+pub fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
+    let mut best_fit: (String, usize) = (format!("Not found matching song"), 0);
+    for (song, val) in findings.iter() {
+        if *val > best_fit.1 {
+            best_fit.0 = song.clone();
+            best_fit.1 = *val;
+        }
+    }
+    best_fit
+}
 
 /// Mp3 decoding file function.
 ///
