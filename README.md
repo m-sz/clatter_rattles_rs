@@ -33,7 +33,7 @@
 - stream tracker for analysis of in memory fingerprint collection reference to trigger response when match happen
 - flexible matching for in memory fingerprint collection tracking
 
-### ALL COMMITS GO TO MASTER UNTIL FIRST RELEASE
+### FIRST VERSION NOT READY YET
 
 ## Dedication
 
