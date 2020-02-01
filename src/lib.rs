@@ -83,13 +83,12 @@ mod tests {
         let receiver = listener.get_listener();
         let reader = thread::spawn(move || {
             let fingerprint_handler = super::fingerprint::FingerprintHandle::new();
-            let mut collected_num = 50;
+            let mut collected_num = 0;
             let mut collected = Vec::new();
             loop {
                 let start_time = Instant::now();
                 let mut decoded = receiver.recv().unwrap();
-                if collected_num < 5 {
-                    collected_num += 1;
+                if collected_num % 5 == 0 {
                     collected.append(&mut decoded);
                 } else {
                     collected.append(&mut decoded);
@@ -100,7 +99,7 @@ mod tests {
                         if let Some(fingerprint) = fingerprint {
                             if *fingerprint != 0 {
                                 let fingerprint_log10 = (*fingerprint as f64).log10();
-                                println!("\nFingerprint for stream chunk: {:?}", &fingerprint);
+                                println!("\nFingerprint for stream: {:?}", &fingerprint);
                                 assert_eq!(
                                     fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
                                     true
@@ -114,6 +113,7 @@ mod tests {
                         start_time.elapsed().as_millis()
                     );
                 }
+                collected_num += 1;
             }
         });
         if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
