@@ -1,5 +1,7 @@
 # Clatter Rattles RS
 
+![v0.1.0](https://github.com/bartOssh/clatter_rattles_rs/workflows/Rust/badge.svg?branch=master)
+
 <p align="center">
     <img 
     width="70%" height="70%"
