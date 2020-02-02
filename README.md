@@ -1,8 +1,6 @@
 # Clatter Rattles RS
 
-[Build](https://github.com/bartOssh/clatter_rattles_rs/workflows/Rust/badge.svg?branch=master)
-![Rust](https://github.com/bartOssh/clatter_rattles_rs/workflows/Rust/badge.svg?branch=master&event=project)
-![Rust](https://github.com/bartOssh/clatter_rattles_rs/workflows/Rust/badge.svg?branch=master&event=label)
+![Build](https://github.com/bartOssh/clatter_rattles_rs/workflows/Rust/badge.svg?branch=master)
 
 <p align="center">
     <img 
