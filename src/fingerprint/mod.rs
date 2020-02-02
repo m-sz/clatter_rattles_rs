@@ -92,6 +92,7 @@ fn hash(arr: &[usize]) -> usize {
 mod tests {
     use rand::prelude::*;
     #[test]
+    // #[ignore]
     fn test_hash() {
         let record_points_0 = vec![32, 45, 100, 140, 235, 300];
         let record_points_1 = vec![33, 45, 100, 145, 235, 300];
