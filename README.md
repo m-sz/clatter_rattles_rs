@@ -29,14 +29,14 @@ Features:
     Best performance will be achieved on fairly simple schema with in RAM database.
 - provides async stream request and parallel stream hashing.
     There is no need for building parallel mechanism by yourself.
-    Stream listener collects asynchronously stream chunks and decodes them in separate thread than main library,
-    then pipes it to receiver. Receiver is boxed by atomic type so hashing and matching can be done in main thread
-    or can be send to thread worker.
-    This design allows for use as much processor resources as possible and speed up matching algorithm significantly.
-- the weakest point so far is that only one thread can read and write to database. 
+    Stream listener collects asynchronously stream chunks and decodes them in separate thread,
+    then pipes it to receiver. Receiver is boxed by atomic type so hashing and matching can be done in separate thread then listener.
+    This design allows to use as more of processor resources and speeds up matching algorithm significantly.
+- the weakest point so far is that only one thread can read and write to database.
     Main cause for that is that using hash lookup wasn't showing any significant improvement of performance while
     performed in parallel threads.
-    More then that, calling for hash matching in larger database was showing slower performance when done in single thread.
+    More then that, when database size increases, parallel calls makes hash lookup longer.
+    This factor made me stick to single threaded database calls. (Please if You know how to improve this provide solution or issue a proposal ticket).
 
 ### Testing
 
