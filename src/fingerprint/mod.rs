@@ -11,6 +11,7 @@ const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array
 const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the hash entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
+///
 #[allow(dead_code)]
 pub struct FingerprintHandle {
     /// FFT algorithm
@@ -33,7 +34,7 @@ impl FingerprintHandle {
     /// then calculates fingerprint hash
     ///
     /// # Arguments:
-    /// * decoded_stream - music that is decoded to stream of floats
+    /// * decoded_stream - acoustic stream that is decoded to stream of floats
     ///
     /// # Returns success of fingerprint hash collection, dynamic error otherwise
     ///
@@ -49,7 +50,10 @@ impl FingerprintHandle {
                     let mut input: Vec<Complex<f32>> = chunk.iter().map(Complex::from).collect();
                     let mut output: Vec<Complex<f32>> = vec![Complex::zero(); FFT_WINDOW_SIZE];
                     self.fft.process(&mut input, &mut output);
-                    hash_array.lock().unwrap().push(calculate_fingerprint_hash(&output));
+                    hash_array
+                        .lock()
+                        .unwrap()
+                        .push(calculate_fingerprint_hash(&output));
                 }
             });
         let arr = hash_array.lock().unwrap().clone();
@@ -58,6 +62,7 @@ impl FingerprintHandle {
 }
 
 /// Find points with max magnitude in each of the bins
+/// 
 fn calculate_fingerprint_hash(arr: &[Complex<f32>]) -> usize {
     let mut high_scores: Vec<f32> = vec![0.0; FREQ_BINS.len()];
     let mut record_points: Vec<usize> = vec![0; FREQ_BINS.len()];
@@ -80,6 +85,7 @@ fn calculate_fingerprint_hash(arr: &[Complex<f32>]) -> usize {
 }
 
 /// Hash function with reverse order
+/// 
 fn hash(arr: &[usize]) -> usize {
     (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
         + (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)

@@ -11,8 +11,8 @@ use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
 
-/// Helps to watch for matches of findings from the stream
-///
+/// Helps to watch for matches of fingerprint findings from the stream
+/// 
 #[derive(Clone, Debug)]
 pub struct MatchesWatcher {
     findings: HashMap<String, usize>,
@@ -22,7 +22,8 @@ pub struct MatchesWatcher {
     chunks_threshold: usize,
 }
 
-/// Helps reads stream and holds multi thread pipe to for sending stream between threads 
+/// Helps to reads stream and holds multi thread pipe to for sending stream between threads 
+/// 
 #[derive(Clone, Debug)]
 struct StreamListener {
     uri: Url,
@@ -31,9 +32,10 @@ struct StreamListener {
     is_active: bool,
 }
 
-/// Casing StreamListener to allow threaded atomic and mutable access to is active state and receiver
+/// Casing StreamListener to allow threaded atomic and mutable access to its active state and receiver
 /// 
-/// Thanks to that approach it is easy to leverage application performance by running stream listener that is a decoder - writer
+/// Thanks to boxing by atomic type approach it is easy to leverage application performance
+/// by running stream listener that is a decoder - writer
 /// and stream reader that can be a fingerprint hasher - stream matcher in separate threads
 ///    
 #[derive(Clone, Debug)]
@@ -61,7 +63,7 @@ impl MatchesWatcher {
             chunks_threshold,
         }
     }
-    /// Feeds MatchesWatcher with findings
+    /// Feeds matches watcher with fingerprint findings
     ///
     /// # Arguments:
     /// * findings - collection of songs and value of matching fingerprints for one stream chunk
@@ -129,11 +131,13 @@ impl ArcStreamListener {
     /// Check if stream listener is active
     ///
     /// # Returns true if listener is in active state, false otherwise
+    /// 
     pub fn is_active(&self) -> bool {
         self.0.lock().unwrap().is_active
     }
 
     /// Deactivates stream listener
+    /// 
     pub fn deactivate(&mut self) {
         self.0.lock().unwrap().is_active = false;
     }
@@ -154,7 +158,7 @@ impl ArcStreamListener {
 
     /// Runs listener ins separate thread that collects stream and feeds pipe sender
     ///
-    /// # Returns success of thread join handle if listener is not active and async block has no errors, dyn Error otherwise
+    /// # Returns success of thread join handle if listener is activated and async block has no errors, dyn Error otherwise
     ///
     pub async fn run_mp3(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
         if self.0.lock().unwrap().is_active == true {

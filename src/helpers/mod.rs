@@ -4,15 +4,16 @@ use std::fs::File;
 use std::io::Read;
 use std::collections::HashMap;
 
-/// Pic the one that has highest value
+/// Pics the song or acoustic sample that has highest value of matching hashes
 ///
 /// # Arguments:
 /// * findings - collection of all songs with matching hash count as a value
 ///
-/// # Returns tuple of best matching song, one with the highest value
+/// # Returns tuple of best matching song, the one with the highest value
 ///
 #[allow(dead_code)]
 pub fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
+    // TODO: consider returning Option or Result
     let mut best_fit: (String, usize) = (format!("Not found matching song"), 0);
     for (song, val) in findings.iter() {
         if *val > best_fit.1 {
