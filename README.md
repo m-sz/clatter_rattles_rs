@@ -62,6 +62,11 @@ Improvements:
   forces the compiler to use a single LLVM module for the entire crate, allowing
   better LLVM optimization.
 
+## Authors
+
+[Claire Amalfitano](https://github.com/polypodioides)
+[Bartosz Lenart](https://github.com/bartOssh)
+
 ## License
 
 [MIT](https://github.com/bartOssh/clatter_rattles_rs/blob/master/LICENSE)
