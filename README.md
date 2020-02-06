@@ -64,8 +64,8 @@ Improvements:
 
 ## Authors
 
-[Claire Amalfitano](https://github.com/polypodioides)
-[Bartosz Lenart](https://github.com/bartOssh)
+- [Claire Amalfitano](https://github.com/polypodioides)
+- [Bartosz Lenart](https://github.com/bartOssh)
 
 ## License
 
