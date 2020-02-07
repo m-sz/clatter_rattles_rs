@@ -54,6 +54,7 @@ Improvements:
 
 ### Testing
 
+- Test against self cached file samples
 - Run local redis database with `systemctl start redis-server.service`
 - Test it with `cargo test -- --nocapture` or `cargo test` <- with less
   information
