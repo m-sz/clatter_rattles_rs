@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::Read;
 use std::collections::HashMap;
 
-/// Pics the song or acoustic sample that has highest value of matching hashes
+/// Chooses the song or acoustic sample that has highest value of matching hashes
 ///
 /// # Arguments:
 /// * findings - collection of all songs with matching hash count as a value
@@ -14,7 +14,7 @@ use std::collections::HashMap;
 #[allow(dead_code)]
 pub fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
     // TODO: consider returning Option or Result
-    let mut best_fit: (String, usize) = (format!("Not found matching song"), 0);
+    let mut best_fit: (String, usize) = (format!("No match found"), 0);
     for (song, val) in findings.iter() {
         if *val > best_fit.1 {
             best_fit.0 = song.clone();

@@ -73,7 +73,7 @@ mod test {
                 1231231234, 9999999999, 8888888888, 1111111111, 2222222222, 3333333333, 4444444444,
                 5555555555, 6666666666, 7777777777,
             ];
-            let song_1 = format!("Shrek and Donkey - Pinocchio is laying again");
+            let song_1 = format!("Shrek and Donkey - Pinocchio is lying again");
             let song_2 = format!("Alice in Wonderland - Poker face");
             let mut db_handler = RedisHelper::new(&"redis://127.0.0.1/").unwrap();
             if let Ok(_) = db_handler.store(&fake_fingerprints_1, &song_1) {
@@ -117,7 +117,7 @@ mod test {
             for fingerprint in 0..fingerprint_2_max {
                 fake_fingerprints_2.push(fingerprint);
             }
-            let song_1 = format!("Shrek and Donkey - Pinocchio is laying again");
+            let song_1 = format!("Shrek and Donkey - Pinocchio is lying again");
             let song_2 = format!("Alice in Wonderland - Poker face");
             let mut db_handler = RedisHelper::new(&"redis://127.0.0.1/").unwrap();
             let start_time = Instant::now();
