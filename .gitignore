@@ -17,3 +17,10 @@ Cargo.lock
 /target
 #**/*.rs.bk
 #Cargo.lock
+
+# testing files
+/assets/*.mp3
+
+# workspace files
+.vscode
+clutter_rattles.code-workspace

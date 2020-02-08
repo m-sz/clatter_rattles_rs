@@ -2,6 +2,27 @@ use minimp3::{Decoder, Frame};
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashMap;
+
+/// Chooses the song or acoustic sample that has highest value of matching hashes
+///
+/// # Arguments:
+/// * findings - collection of all songs with matching hash count as a value
+///
+/// # Returns tuple of best matching song, the one with the highest value
+///
+#[allow(dead_code)]
+pub fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
+    // TODO: consider returning Option or Result
+    let mut best_fit: (String, usize) = (format!("No match found"), 0);
+    for (song, val) in findings.iter() {
+        if *val > best_fit.1 {
+            best_fit.0 = song.clone();
+            best_fit.1 = *val;
+        }
+    }
+    best_fit
+}
 
 /// Mp3 decoding file function.
 ///
@@ -63,6 +84,7 @@ fn decode_frames<R: Read>(decoder: &mut Decoder<R>) -> Result<Vec<f32>, Box<dyn 
 #[cfg(test)]
 mod test {
     #[test]
+    #[ignore] // ignored for rust acction test
     fn test_decode_mp3_from_file() {
         // This test verifies if used library for decoding mp3 is working fine
         // and nothing substantial has been changed in external lib.

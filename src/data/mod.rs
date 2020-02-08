@@ -4,9 +4,9 @@ pub mod stream_actions;
 use std::collections::HashMap;
 use std::error::Error;
 
-trait Repository {
-    /// Index all given fingerprints by adding or updating fingerprint as a key
-    /// and song as a value in to database
+pub trait Repository {
+    /// Index all given fingerprints by adding or updating / adding fingerprint as a key
+    /// and pushes song to set of values
     ///
     /// #Arguments:
     /// * fingerprints - collection of all fingerprints for a given song
@@ -16,8 +16,8 @@ trait Repository {
     ///  
     fn store(&mut self, fingerprints: &Vec<usize>, song: &String) -> Result<(), Box<dyn Error>>;
 
-    /// Get all fingerprints with corresponding songs list, then calculate hash map collection
-    /// by the song title and author as a key and number of fingerprints it occurred as a value
+    /// Get all fingerprints with corresponding songs list (set), then calculate hash map collection
+    /// by using the song title and author as a key and number of fingerprints it occurred in as a value
     ///
     /// # Arguments:
     /// * fingerprints - collection of all fingerprints that We want to match songs against
@@ -31,7 +31,7 @@ trait Repository {
     ) -> Result<HashMap<String, usize>, Box<dyn Error>>;
 }
 
-trait PlaylistHelper {
+pub trait PlaylistHelper {
     /// Finds uri located inside playlist
     ///
     /// # Return success of uri string if present or Error otherwise

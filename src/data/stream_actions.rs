@@ -1,15 +1,29 @@
 use super::{decode_mp3_from_chunk, PlaylistHelper};
+use crate::helpers::pick_most_likely;
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use m3u8_rs::playlist::{MasterPlaylist, MediaPlaylist, Playlist, VariantStream};
 use reqwest::{get, Url};
+use std::collections::HashMap;
 use std::error::Error;
 use std::io::Cursor;
-use std::process;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::runtime::Runtime;
 
+/// Helps to watch for matches of fingerprint findings from the stream
+/// 
+#[derive(Clone, Debug)]
+pub struct MatchesWatcher {
+    findings: HashMap<String, usize>,
+    fingerprints_count: usize,
+    fingerprints_threshold: usize,
+    chunks_count: usize,
+    chunks_threshold: usize,
+}
+
+/// Helps to reads stream and holds multi thread pipe to for sending stream between threads 
+/// 
 #[derive(Clone, Debug)]
 struct StreamListener {
     uri: Url,
@@ -18,8 +32,71 @@ struct StreamListener {
     is_active: bool,
 }
 
+/// Casing StreamListener to allow threaded atomic and mutable access to its active state and receiver
+/// 
+/// Thanks to boxing by atomic type approach it is easy to leverage application performance
+/// by running stream listener that is a decoder - writer
+/// and stream reader that can be a fingerprint hasher - stream matcher in separate threads
+///    
 #[derive(Clone, Debug)]
 pub struct ArcStreamListener(Arc<Mutex<StreamListener>>);
+
+#[allow(dead_code)]
+impl MatchesWatcher {
+    /// Create instance of MatchesWatcher
+    ///
+    /// # Arguments:
+    /// * fingerprints_threshold - threshold for fingerprints that should be totally matched for chunks number equal chunks_threshold
+    /// * chunks_threshold - threshold for max chunks to take to account for watching for matching fingerprints
+    ///
+    /// # Returns new instance of MatchesWatcher
+    /// 
+    pub fn new(fingerprints_threshold: usize, chunks_threshold: usize) -> Self {
+        let findings = HashMap::new();
+        let fingerprints_count = 0;
+        let chunks_count = 0;
+        Self {
+            findings,
+            fingerprints_count,
+            fingerprints_threshold,
+            chunks_count,
+            chunks_threshold,
+        }
+    }
+    /// Feeds matches watcher with fingerprint findings
+    ///
+    /// # Arguments:
+    /// * findings - collection of songs and value of matching fingerprints for one stream chunk
+    ///
+    /// # Returns Option with tuple of sum of findings and difference between most likely matching song for given findings
+    ///
+    pub fn feed(
+        &mut self,
+        findings: HashMap<String, usize>,
+    ) -> Option<(HashMap<String, usize>, usize)> {
+        for (song, value) in findings.iter() {
+            match self.findings.get_mut(song) {
+                Some(count) => {
+                    *count += value;
+                }
+                None => {
+                    self.findings.insert(song.clone(), *value);
+                }
+            };
+        }
+        self.fingerprints_count = pick_most_likely(&self.findings).1;
+        self.chunks_count += 1;
+        if self.fingerprints_count >= self.fingerprints_threshold
+            || self.chunks_count == self.chunks_threshold
+        {
+            let difference_from_threshold = self.fingerprints_threshold - self.fingerprints_count;
+            self.fingerprints_count = 0;
+            self.chunks_count = 0;
+            return Some((self.findings.clone(), difference_from_threshold));
+        }
+        None
+    }
+}
 
 #[allow(dead_code)]
 impl ArcStreamListener {
@@ -54,11 +131,13 @@ impl ArcStreamListener {
     /// Check if stream listener is active
     ///
     /// # Returns true if listener is in active state, false otherwise
+    /// 
     pub fn is_active(&self) -> bool {
         self.0.lock().unwrap().is_active
     }
 
     /// Deactivates stream listener
+    /// 
     pub fn deactivate(&mut self) {
         self.0.lock().unwrap().is_active = false;
     }
@@ -79,7 +158,7 @@ impl ArcStreamListener {
 
     /// Runs listener ins separate thread that collects stream and feeds pipe sender
     ///
-    /// # Returns success of thread join handle if listener is not active and async block has no errors, dyn Error otherwise
+    /// # Returns success of thread join handle if listener is activated and async block has no errors, dyn Error otherwise
     ///
     pub async fn run_mp3(&self) -> Result<JoinHandle<()>, Box<dyn Error>> {
         if self.0.lock().unwrap().is_active == true {
@@ -122,9 +201,8 @@ async fn listen_mp3_stream(listener: ArcStreamListener) -> Result<(), Box<dyn Er
     let mut res = reqwest::get(listener.0.lock().unwrap().uri.clone()).await?;
     while let Some(chunk) = res.chunk().await? {
         if listener.0.lock().unwrap().is_active == false {
-            // stop the process and exit
-            // println!("\n Stopped \n");
-            process::exit(0x0100);
+            // stop loop and finish listening
+            break;
         };
         let readable_buffer = Cursor::new(chunk);
         let decoded = decode_mp3_from_chunk(readable_buffer);
@@ -174,39 +252,54 @@ mod test {
     use std::time::Duration;
 
     #[async_test]
+    #[ignore]
     async fn test_get_m3u8_stream() {
-        let mut listener = ArcStreamListener::new(
-            format!("http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_high/ak/bbc_radio_two.m3u8")
-        ).unwrap();
-        let a = Runtime::new().unwrap().block_on(listener.run_m3u8());
-        println!("\nGetting m3ue stream {:?}\n", &a);
+        dotenv::dotenv().ok();
+        if dotenv!("RADIO_STREAM_ENABLED") == "true" {
+            let mut listener = ArcStreamListener::new(
+                format!("http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_high/ak/bbc_radio_two.m3u8")
+            ).unwrap();
+            let a = Runtime::new().unwrap().block_on(listener.run_m3u8());
+            println!("\nGetting m3ue stream {:?}\n", &a);
+        } else {
+            println!("test_get_m3ue_stream does nothing");
+        }
     }
     #[async_test]
+    #[ignore]
     async fn test_get_mp3_stream() {
-        let mut listener = ArcStreamListener::new(
-            format!("https://str2b.openstream.co/604?aw_0_1st.collectionid=3162&stationId=3162&publisherId=628&listenerid=1580311050432_0.47836979431904714&awparams=companionAds%3Atrue&aw_0_1st.version=1.1.4%3Ahtml5")
-        ).unwrap();
-        let receiver = listener.get_listener();
-        let reader = thread::spawn(move || {
-            let mut tested = false;
-            loop {
-                let decoded = receiver.recv().unwrap();
-                if !tested {
-                    tested = true;
-                    // testing is stream correct
-                    assert_eq!(decoded.len() > 0, true);
-                    println!(
-                        "\nReceived decoded stream of {:?} floats by crossbeam channel pipe",
-                        &decoded.len()
-                    );
+        dotenv::dotenv().ok();
+        if dotenv!("RADIO_STREAM_ENABLED") == "true" {
+            let mut listener = ArcStreamListener::new(
+                format!("https://str2b.openstream.co/604?aw_0_1st.collectionid=3162&stationId=3162&publisherId=628&listenerid=1580311050432_0.47836979431904714&awparams=companionAds%3Atrue&aw_0_1st.version=1.1.4%3Ahtml5")
+            ).unwrap();
+            let receiver = listener.get_listener();
+            let reader = thread::spawn(move || {
+                let mut tested = false;
+                loop {
+                    let decoded = receiver.recv().unwrap();
+                    if !tested {
+                        tested = true;
+                        // testing is stream correct
+                        assert_eq!(decoded.len() > 0, true);
+                        println!(
+                            "\nReceived decoded stream of {:?} floats by crossbeam channel pipe",
+                            &decoded.len()
+                        );
+                    } else {
+                        break;
+                    }
                 }
-            }
-        });
-        if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
-            sleep(Duration::from_secs(8));
-            listener.deactivate();
-            a.join().unwrap();
-            reader.join().unwrap();
-        };
+            });
+            if let Ok(a) = Runtime::new().unwrap().block_on(listener.run_mp3()) {
+                sleep(Duration::from_secs(3));
+                listener.deactivate();
+                a.join().unwrap();
+                reader.join().unwrap();
+            };
+        } else {
+            println!("test_get_mp3_stream does nothing");
+            return ();
+        }
     }
 }
