@@ -22,4 +22,5 @@ Cargo.lock
 /assets/*.mp3
 
 # workspace files
+.vscode
 clutter_rattles.code-workspace
