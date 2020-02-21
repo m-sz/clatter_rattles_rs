@@ -70,6 +70,7 @@ Improvements:
 - [Claire Amalfitano](https://github.com/polypodioides)
 - [Bartosz Lenart](https://github.com/bartOssh)
 - [Oskar Piechowicz](https://github.com/opiechow)
+- [Marcin Szymczak](https://github.com/m-sz)
 
 ## License
 
