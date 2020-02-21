@@ -14,14 +14,20 @@ use std::collections::HashMap;
 #[allow(dead_code)]
 pub fn pick_most_likely(findings: &HashMap<String, usize>) -> (String, usize) {
     // TODO: consider returning Option or Result
-    let mut best_fit: (String, usize) = (format!("No match found"), 0);
-    for (song, val) in findings.iter() {
-        if *val > best_fit.1 {
-            best_fit.0 = song.clone();
-            best_fit.1 = *val;
+    
+    let empty = "No match found".to_string();
+    let best = findings.iter().fold(
+        (&empty, 0),
+        |mut current, (string, &count)| {
+            if count > current.1 {
+                current.1 = count;
+                current.0 = string;
+            }
+            current
         }
-    }
-    best_fit
+    );
+
+    (best.0.clone(), best.1)
 }
 
 /// Mp3 decoding file function.
@@ -83,6 +89,8 @@ fn decode_frames<R: Read>(decoder: &mut Decoder<R>) -> Result<Vec<f32>, Box<dyn 
 
 #[cfg(test)]
 mod test {
+    use crate::helpers::pick_most_likely;
+
     #[test]
     #[ignore] // ignored for rust acction test
     fn test_decode_mp3_from_file() {
@@ -97,5 +105,20 @@ mod test {
         } else {
             assert_eq!(1, 2);
         }
+    }
+
+    #[test]
+    fn test_pick_most_likely() {
+        use std::collections::HashMap;
+
+        let mut findings = HashMap::new();
+        findings.insert("Mock song 1".to_string(), 1);
+        findings.insert("Mock song 2".to_string(), 2);
+        findings.insert("Mock song 3".to_string(), 0);
+        findings.insert("Best mock song".to_string(), 4);
+
+        let (best_fit, count) = pick_most_likely(&findings);
+        assert_eq!(best_fit, "Best mock song");
+        assert_eq!(count, 4);
     }
 }
