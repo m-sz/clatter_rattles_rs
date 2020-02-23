@@ -69,9 +69,9 @@ mod test {
             let fingerprints = fingerprinter.calc_fingerprint_collection(&decoded).unwrap();
             *number_of_fingerprints.lock().unwrap() += fingerprints.len();
             let findings = db_handler.find_matches(&fingerprints).unwrap();
-            // println!("{:?} : {}", &findings, &file_name);
             let matched_song = helpers::pick_most_likely(&findings);
-            println!("Matched song name {} with matched percentage of {}", &matched_song.0, ((matched_song.1 as f32 / fingerprints.len() as f32) * 100_f32) as u16);
+            println!("Sample name: {}", &file_name);
+            println!("Matched song name {} Match accuracy {} %\n", &matched_song.0, ((matched_song.1 as f32 / fingerprints.len() as f32) * 100_f32) as u16);
         });
         let stop = start.elapsed().as_millis();
         println!("Total time to calculate and match {} samples took: {} ms", counter, stop);
