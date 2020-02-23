@@ -7,7 +7,7 @@ use std::error::Error;
 use std::sync::{Arc, Mutex};
 
 const FFT_WINDOW_SIZE: usize = 1024; // chunk window size to process by fast forward fourier function
-const FREQ_BINS: &[usize] = &[32, 40, 80, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
+const FREQ_BINS: &[usize] = &[32, 40, 60, 80, 100, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
 const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the fingerprint entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
@@ -84,40 +84,15 @@ fn calculate_fingerprint(arr: &[Complex<f32>]) -> usize {
     encode(&record_points)
 }
 
-/// Encodeing function with reverse order
+/// Encoding function with reverse order
 /// 
 fn encode(arr: &[usize]) -> usize {
-    (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
-        + (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)
-        + (arr[2] - (arr[2] % FUZZ_FACTOR)) * usize::pow(10, 5)
-        + (arr[1] - (arr[1] % FUZZ_FACTOR)) * usize::pow(10, 2)
-        + (arr[0] - (arr[0] % FUZZ_FACTOR))
-}
-
-#[cfg(test)]
-mod tests {
-    use rand::prelude::*;
-    #[test]
-    // #[ignore]
-    fn test_hash() {
-        let record_points_0 = vec![32, 45, 100, 140, 235, 300];
-        let record_points_1 = vec![33, 45, 100, 145, 235, 300];
-        assert_eq!(super::encode(&record_points_0), 2354010004432);
-        assert_ne!(super::encode(&record_points_0), super::encode(&record_points_1));
-    }
-    #[test]
-    fn test_calculate_fingerprint() {
-        let mut rng = rand::thread_rng();
-        let mut arr_f32: Vec<f32> = vec![0.0; super::FFT_WINDOW_SIZE];
-        arr_f32.iter_mut().for_each(|complex_num| {
-            *complex_num = rng.gen::<f32>() * 10000_f32;
-        });
-        let arr: Vec<super::Complex<f32>> = arr_f32.iter().map(super::Complex::from).collect();
-        let fingerprint: usize = super::calculate_fingerprint(&arr);
-        let fingerprint_log10 = (fingerprint as f64).log10();
-        assert_eq!(
-            fingerprint_log10 > 12_f64 && fingerprint_log10 < 13_f64,
-            true
-        );
-    }
+    (arr[4] - (arr[7] % FUZZ_FACTOR)) * usize::pow(10, 16)
+    + (arr[4] - (arr[6] % FUZZ_FACTOR)) * usize::pow(10, 14)
+    + (arr[4] - (arr[5] % FUZZ_FACTOR)) * usize::pow(10, 12)
+    + (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
+    + (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)
+    + (arr[2] - (arr[2] % FUZZ_FACTOR)) * usize::pow(10, 6)
+    + (arr[1] - (arr[1] % FUZZ_FACTOR)) * usize::pow(10, 2)
+    + (arr[0] - (arr[0] % FUZZ_FACTOR))
 }

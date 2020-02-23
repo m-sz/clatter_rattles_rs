@@ -92,7 +92,7 @@ mod test {
     use crate::helpers::pick_most_likely;
 
     #[test]
-    #[ignore] // ignored for rust acction test
+    #[ignore] // ignored for rust action test
     fn test_decode_mp3_from_file() {
         // This test verifies if used library for decoding mp3 is working fine
         // and nothing substantial has been changed in external lib.
