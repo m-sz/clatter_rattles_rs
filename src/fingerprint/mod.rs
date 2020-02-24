@@ -6,7 +6,7 @@ use rustfft::FFT;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 
-const FFT_WINDOW_SIZE: usize = 1024; // chunk window size to process by fast forward fourier function
+const FFT_WINDOW_SIZE: usize = 2048; // chunk window size to process by fast forward fourier function
 const FREQ_BINS: &[usize] = &[32, 40, 60, 80, 100, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
 const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the fingerprint entropy, and less bias the algorithm become to the sound noises
 
