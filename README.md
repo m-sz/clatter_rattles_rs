@@ -65,6 +65,40 @@ Improvements:
   forces the compiler to use a single LLVM module for the entire crate, allowing
   better LLVM optimization.
 
+### Test:
+
+Hardware: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz, Intel Corporation Cannon Point-LP Shared SRAM Speed: 2400 MT/s
+
+STATISTICS:
+
+Total time to calculate and populate db with 31 songs took: 167943 ms
+Average time to calculate and add to db 1 song 5417 ms
+Average time to calculate and ad to db 1000 fingerprints took: 950 ms
+Calculating samples fingerprints
+
+Track : Sample
+Guns N' Roses - Welcome To The Jungle.mp3 : Guns N' Roses - Welcome To The Jungle.mp3
+Match accuracy 16 %
+
+
+Track : Sample
+twenty one pilots - Ride.mp3 : twenty one pilots - Ride.mp3
+Match accuracy 33 %
+
+
+Track : Sample
+Tove Lo - Habits .mp3 : Tove Lo - Habits .mp3
+Match accuracy 52 %
+
+
+Track : Sample
+Maroon 5 - Memories.mp3 : Maroon 5 - Memories.mp3
+Match accuracy 47 %
+
+Total time to calculate and match 4 samples took: 2611 ms
+Average time to calculate fingerprint for 1 sample and match it against fingerprints in db took 652 ms
+
+
 ## Authors
 
 - [Claire Amalfitano](https://github.com/polypodioides)
