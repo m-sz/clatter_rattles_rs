@@ -49,7 +49,7 @@ mod test {
             println!("\nSTATISTICS:");
             println!("Total time to calculate and populate db with {} songs took: {} ms", counter, stop);
             println!("Average time to calculate and add to db 1 song {} ms", (stop as f32 / counter as f32 ) as u128);
-            println!("Average time to calculate and ad to db 1000 fingerprints took: {} ms", (stop as f32 / (*number_of_fingerprints.lock().unwrap() as f32 / 1000_f32)) as u128);
+            println!("Average time to calculate and add to db 1000 fingerprints took: {} ms", (stop as f32 / (*number_of_fingerprints.lock().unwrap() as f32 / 1000_f32)) as u128);
         }
 
         // test pick most likely

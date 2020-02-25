@@ -67,14 +67,17 @@ Improvements:
 
 ### Test:
 
-Hardware: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz, Intel Corporation Cannon Point-LP Shared SRAM Speed: 2400 MT/s
+Hardware: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz, Intel Corporation Cannon Point-LP Shared SRAM Speed: 2400 MT/s,
+Build with: rust stable-x86_64-unknown-linux-gnu.
+Redis server: v=5.0.7 sha=00000000:0 malloc=jemalloc-5.2.1 bits=64 build=49eb440ab0786b6a
 
 STATISTICS:
 
 Total time to calculate and populate db with 31 songs took: 167943 ms
 Average time to calculate and add to db 1 song 5417 ms
-Average time to calculate and ad to db 1000 fingerprints took: 950 ms
+Average time to calculate and add to db 1000 fingerprints took: 950 ms
 Calculating samples fingerprints
+Sample length: ~30 seconds.
 
 Track : Sample
 Guns N' Roses - Welcome To The Jungle.mp3 : Guns N' Roses - Welcome To The Jungle.mp3
@@ -97,6 +100,8 @@ Match accuracy 47 %
 
 Total time to calculate and match 4 samples took: 2611 ms
 Average time to calculate fingerprint for 1 sample and match it against fingerprints in db took 652 ms
+
+All samples matched corresponding songs.
 
 
 ## Authors
