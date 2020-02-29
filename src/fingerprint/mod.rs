@@ -5,10 +5,11 @@ use rustfft::num_traits::Zero;
 use rustfft::FFT;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
+use std::usize;
 
-const FFT_WINDOW_SIZE: usize = 2048; // chunk window size to process by fast forward fourier function
+const FFT_WINDOW_SIZE: usize = 1024; // chunk window size to process by fast forward fourier function
 const FREQ_BINS: &[usize] = &[32, 40, 60, 80, 100, 120, 180, 320]; // Each value in array is a top range frequency to calculate local maximum magnitude for
-const FUZZ_FACTOR: usize = 2; // higher the value of this factor, lower the fingerprint entropy, and less bias the algorithm become to the sound noises
+const FUZZ_FACTOR: usize = 8; // higher the value of this factor, lower the fingerprint entropy, and less bias the algorithm become to the sound noises
 
 /// Helper struct for calculating acoustic fingerprint
 ///
@@ -46,7 +47,7 @@ impl FingerprintHandle {
         decoded_stream
             .par_chunks(FFT_WINDOW_SIZE) // multi threaded iteration over chunks, where chunk of size FFT_WINDOW_SIZE
             .for_each(|chunk| {
-                if chunk.len() >= FFT_WINDOW_SIZE {
+                if chunk.len() == FFT_WINDOW_SIZE {
                     let mut input: Vec<Complex<f32>> = chunk.iter().map(Complex::from).collect();
                     let mut output: Vec<Complex<f32>> = vec![Complex::zero(); FFT_WINDOW_SIZE];
                     self.fft.process(&mut input, &mut output);
@@ -80,19 +81,18 @@ fn calculate_fingerprint(arr: &[Complex<f32>]) -> usize {
             record_points[bin_idx] = bin;
         }
     }
-
     encode(&record_points)
 }
 
 /// Encoding function with reverse order
-/// 
+///
 fn encode(arr: &[usize]) -> usize {
-    (arr[4] - (arr[7] % FUZZ_FACTOR)) * usize::pow(10, 16)
-    + (arr[4] - (arr[6] % FUZZ_FACTOR)) * usize::pow(10, 14)
-    + (arr[4] - (arr[5] % FUZZ_FACTOR)) * usize::pow(10, 12)
-    + (arr[4] - (arr[4] % FUZZ_FACTOR)) * usize::pow(10, 10)
-    + (arr[3] - (arr[3] % FUZZ_FACTOR)) * usize::pow(10, 8)
-    + (arr[2] - (arr[2] % FUZZ_FACTOR)) * usize::pow(10, 6)
-    + (arr[1] - (arr[1] % FUZZ_FACTOR)) * usize::pow(10, 2)
-    + (arr[0] - (arr[0] % FUZZ_FACTOR))
+    (arr[7] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 16)
+    + (arr[6] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 14)
+    + (arr[5] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 12)
+    + (arr[4] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 10)
+    + (arr[3] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 8)
+    + (arr[2] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 6)
+    + (arr[1] as f32 / FUZZ_FACTOR as f32) as usize * usize::pow(10, 2)
+    + (arr[0] as f32 / FUZZ_FACTOR as f32) as usize
 }

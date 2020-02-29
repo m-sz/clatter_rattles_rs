@@ -66,42 +66,42 @@ Redis server: v=5.0.7 sha=00000000:0 malloc=jemalloc-5.2.1 bits=64 build=49eb440
 
 STATISTICS:
 
-Total time to calculate and populate db with 31 songs took: 167943 ms
-Average time to calculate and add to db 1 song 5417 ms
-Average time to calculate and add to db 1000 fingerprints took: 950 ms
+Total time to calculate and populate db with 31 songs took: 142626 ms
+Average time to calculate and add to db 1 song 4600 ms
+Average time to calculate and add to db 1000 fingerprints took: 807 ms
 Calculating samples fingerprints
-Sample length: ~30 seconds.
 
 Track : Sample
 Guns N' Roses - Welcome To The Jungle.mp3 : Guns N' Roses - Welcome To The Jungle.mp3
-Match accuracy 16 %
-
-
-Track : Sample
-twenty one pilots - Ride.mp3 : twenty one pilots - Ride.mp3
-Match accuracy 33 %
-
-
-Track : Sample
-Tove Lo - Habits .mp3 : Tove Lo - Habits .mp3
-Match accuracy 52 %
+Match accuracy 58 %
 
 
 Track : Sample
 Maroon 5 - Memories.mp3 : Maroon 5 - Memories.mp3
-Match accuracy 47 %
+Match accuracy 61 %
 
-Total time to calculate and match 4 samples took: 2611 ms
-Average time to calculate fingerprint for 1 sample and match it against fingerprints in db took 652 ms
+
+Track : Sample
+Tove Lo - Habits .mp3 : Tove Lo - Habits .mp3
+Match accuracy 70 %
+
+
+Track : Sample
+twenty one pilots - Ride.mp3 : twenty one pilots - Ride.mp3
+Match accuracy 62 %
+
+Total time to calculate and match 4 samples took: 2430 ms
+Average time to calculate fingerprint for 1 sample and match it against fingerprints in db took 607 ms
 
 All samples matched corresponding songs.
 
 
-## Authors
+## Contributors
 
 - [Claire Amalfitano](https://github.com/polypodioides)
 - [Bartosz Lenart](https://github.com/bartOssh)
 - [Oskar Piechowicz](https://github.com/opiechow)
+- [Janusz Roll](https://github.com/janeek1995)
 - [Marcin Szymczak](https://github.com/m-sz)
 
 ## License

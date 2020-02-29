@@ -12,7 +12,6 @@ mod test {
     use std::fs;
     use rayon::prelude::*;
     use std::sync::{Arc, Mutex};
-    // use std::fs::DirEntry;
 
     #[test]
     fn test_matching_algorithm() -> Result<(), std::io::Error> {
