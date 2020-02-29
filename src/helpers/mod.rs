@@ -92,16 +92,16 @@ mod test {
     use crate::helpers::pick_most_likely;
 
     #[test]
-    #[ignore] // ignored for rust acction test
+    #[ignore]
     fn test_decode_mp3_from_file() {
         // This test verifies if used library for decoding mp3 is working fine
         // and nothing substantial has been changed in external lib.
         // Please check always against the same file, otherwise it will not pass.
-        let filename = format!("./assets/sample.mp3");
+        let filename = format!("./assets/space_cover.mp3");
         let decoded_stream = super::decode_mp3_from_file(&filename);
         if let Ok(stream) = decoded_stream {
             println!("\nDecoded bytes: {:?} \n", &stream.len());
-            assert_eq!(stream.len(), 619776);
+            assert_eq!(stream.len(), 9654912);
         } else {
             assert_eq!(1, 2);
         }

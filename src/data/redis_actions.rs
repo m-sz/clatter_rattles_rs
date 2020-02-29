@@ -61,7 +61,7 @@ mod test {
     use super::{RedisHelper, Repository};
     use std::time::Instant;
     #[test]
-    // #[ignore]
+    #[ignore]
     fn test_repository() {
         dotenv::dotenv().ok();
         if dotenv!("REDIS_ENABLED") == "true" {
@@ -103,7 +103,7 @@ mod test {
         }
     }
     #[test]
-    // #[ignore]
+    #[ignore]
     fn test_benchmark_repository() {
         dotenv::dotenv().ok();
         if dotenv!("REDIS_ENABLED") == "true" {

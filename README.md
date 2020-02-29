@@ -33,13 +33,6 @@ Strategies:
     to implement this feature in any database. Using a database engine that
     supports fast hash lookup is highly recommended. The best performance can be
     achieved on a fairly simple schema within database RAM.
-- Use async stream request and parallel stream hashing.
-    There is no need to build a parallel mechanism by yourself.
-    The stream listener collects chunks asynchronously and decodes them in a
-    separate thread, then pipes it to the receiver. The receiver is boxed by
-    atomic type, so hashing and matching can be done in a separate thread than
-    the listener. This design allows more processor resources to be used, and
-    speeds up the matching algorithm significantly.
 
 Improvements:
 
@@ -65,11 +58,50 @@ Improvements:
   forces the compiler to use a single LLVM module for the entire crate, allowing
   better LLVM optimization.
 
-## Authors
+### Test:
+
+Hardware: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz, Intel Corporation Cannon Point-LP Shared SRAM Speed: 2400 MT/s,
+Build with: rust stable-x86_64-unknown-linux-gnu.
+Redis server: v=5.0.7 sha=00000000:0 malloc=jemalloc-5.2.1 bits=64 build=49eb440ab0786b6a
+
+STATISTICS:
+
+Total time to calculate and populate db with 31 songs took: 142626 ms
+Average time to calculate and add to db 1 song 4600 ms
+Average time to calculate and add to db 1000 fingerprints took: 807 ms
+Calculating samples fingerprints
+
+Track : Sample
+Guns N' Roses - Welcome To The Jungle.mp3 : Guns N' Roses - Welcome To The Jungle.mp3
+Match accuracy 58 %
+
+
+Track : Sample
+Maroon 5 - Memories.mp3 : Maroon 5 - Memories.mp3
+Match accuracy 61 %
+
+
+Track : Sample
+Tove Lo - Habits .mp3 : Tove Lo - Habits .mp3
+Match accuracy 70 %
+
+
+Track : Sample
+twenty one pilots - Ride.mp3 : twenty one pilots - Ride.mp3
+Match accuracy 62 %
+
+Total time to calculate and match 4 samples took: 2430 ms
+Average time to calculate fingerprint for 1 sample and match it against fingerprints in db took 607 ms
+
+All samples matched corresponding songs.
+
+
+## Contributors
 
 - [Claire Amalfitano](https://github.com/polypodioides)
 - [Bartosz Lenart](https://github.com/bartOssh)
 - [Oskar Piechowicz](https://github.com/opiechow)
+- [Janusz Roll](https://github.com/janeek1995)
 - [Marcin Szymczak](https://github.com/m-sz)
 
 ## License
